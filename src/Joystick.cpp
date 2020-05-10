@@ -427,7 +427,7 @@ Joystick_::Joystick_(
 		tempHidReportDescriptor[hidReportDescriptorSize++] = 0x81;
 		tempHidReportDescriptor[hidReportDescriptorSize++] = 0x02;
 		
-		// END_COLLECTION (Physical)
+		// END_COLLECTION (Physical) 
 		tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
 	} // Simulation Controls
 
@@ -439,7 +439,7 @@ Joystick_::Joystick_(
 	memcpy(customHidReportDescriptor, tempHidReportDescriptor, hidReportDescriptorSize);
 	// Register HID Report Description
 	DynamicHIDSubDescriptor* node = new DynamicHIDSubDescriptor(customHidReportDescriptor, hidReportDescriptorSize,pidReportDescriptor, pidReportDescriptorSize, false);
-	//DynamicHIDSubDescriptor *node = new DynamicHIDSubDescriptor(pidReportDescriptor, pidReportDescriptorSize, false);
+	
 	DynamicHID().AppendDescriptor(node);
 	
     // Setup Joystick State
@@ -485,9 +485,76 @@ void Joystick_::begin(bool initAutoSendState)
 	sendState();
 }
 
-int Joystick_::recv_from_usb(byte* data) {
+int32_t Joystick_::recv_from_usb() {
 	DynamicHID().RecvfromUsb();
-	return 0;
+	return forceCalculator();
+}
+
+int32_t Joystick_::forceCalculator() {
+	int32_t force = 0;
+	for (int id = 0; id < MAX_EFFECTS; id++) {
+		volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
+		if ((effect.state == MEFFECTSTATE_PLAYING) &&
+			((effect.elapsedTime <= effect.duration) ||
+			(effect.duration == USB_DURATION_INFINITE)) &&
+			!DynamicHID().pidReportHandler.devicePaused)
+		{
+			switch (effect.effectType)
+			{
+				float tempforce;
+			case USB_EFFECT_CONSTANT://1
+				force += ConstantForceCalculator(effect) * ConstantGain;
+				break;
+			case USB_EFFECT_RAMP://2
+			   //Serial.println("EFFECT_RAMP");
+			   //force += RampForceCalculator(effect) * rampGain;
+				break;
+			case USB_EFFECT_SQUARE://3
+			   //Serial.println("EFFECT_SQUARE");
+			   //force += SquareForceCalculator(effect) * squareGain;
+				break;
+			case USB_EFFECT_SINE://4
+				force += SinForceCalculator(effect) * sinGain;
+				break;
+			case USB_EFFECT_TRIANGLE://5
+			   //Serial.println("EFFECT_TRIANGLE");
+			   //force += TriangleForceCalculator(effect) * triangleGain;
+				break;
+			case USB_EFFECT_SAWTOOTHDOWN://6
+			   //Serial.println("EFFECT_SAWTOOTHDOWN");
+				break;
+			case USB_EFFECT_SAWTOOTHUP://7
+			   //Serial.println("EFFECT_SAWTOOTHUP");
+			   //force += SawtoothDownForceCalculator(effect) * sawToothDownGain;
+				break;
+			case USB_EFFECT_SPRING://8
+				force += ConditionForceCalculator(effect, NormalizeRange(value, ENCODER_MAX_VALUE)) * springGain;
+				break;
+			case USB_EFFECT_DAMPER://9
+			   //Serial.println("EFFECT_DAMPER");
+			   //force += ConditionForceCalculator(effect, NormalizeRange(encoder.currentVelocity, encoder.maxVelocity)) * damperGain;
+				break;
+			case USB_EFFECT_INERTIA://10
+			   //Serial.println("EFFECT_INERTIA");
+			   //if ( encoder.currentAcceleration < 0 and encoder.positionChange < 0) {
+				 //force += ConditionForceCalculator(effect, abs(NormalizeRange(encoder.currentAcceleration, encoder.maxAcceleration))) * inertiaGain;
+			   //} else if ( encoder.currentAcceleration < 0 and encoder.positionChange > 0) {
+				 //force -= ConditionForceCalculator(effect, abs(NormalizeRange(encoder.currentAcceleration, encoder.maxAcceleration))) * inertiaGain;
+			   //}
+				break;
+			case USB_EFFECT_FRICTION://11
+			   //force += ConditionForceCalculator(effect, NormalizeRange(encoder.positionChange, encoder.maxPositionChange)) * frictionGain;
+			   //Serial.println("EFFECT_FRICTION");
+				break;
+			case USB_EFFECT_CUSTOM://12
+			   //Serial.println("EFFECT_CUSTOM");
+				break;
+			}
+			effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+		}
+	}
+	force = (int32_t)((float)1.00 * force * totalGain / 10000); // each effect gain * total effect gain = 10000
+	return constrain(force, -250, 250);
 }
 
 void Joystick_::end()

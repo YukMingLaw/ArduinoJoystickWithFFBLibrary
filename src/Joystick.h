@@ -54,6 +54,7 @@
 #define JOYSTICK_TYPE_JOYSTICK             0x04
 #define JOYSTICK_TYPE_GAMEPAD              0x05
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
+#define FORCE_FEEDBACK_MAXGAIN               100
 
 class Joystick_
 {
@@ -107,6 +108,31 @@ private:
 	uint8_t                  _hidReportId;
 	uint8_t                  _hidReportSize; 
 
+	//force feedback gain
+	uint8_t TotalGain         = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t ConstantGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t RampGain          = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SquareGain        = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SineGain          = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t TriangleGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SawtoothDownGain  = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SawtoothUpGain    = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SpringGain        = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t DamperGain        = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t InerrtiaGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t FrictionGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t CustomGain        = FORCE_FEEDBACK_MAXGAIN;
+
+	//force feedback effect params
+	int32_t springPosition             = 0;
+	int32_t springMaxPosition          = 0;
+	int32_t damperVelocity             = 0;
+	int32_t damperMaxVelocity          = 0;
+	int32_t inertiaAcceleration        = 0;
+	int32_t inertiaMaxAcceleration     = 0;
+	int32_t frictionPositionChange     = 0;
+	int32_t frictionMaxPositionChange  = 0;
+
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
 	int buildAndSetAxisValue(bool includeAxis, int16_t axisValue, int16_t axisMinimum, int16_t axisMaximum, uint8_t dataLocation[]);
@@ -131,7 +157,6 @@ public:
 		bool includeSteering = true);
 
 	void begin(bool initAutoSendState = true);
-	int recv_from_usb(byte* data);
 	void end();
 	
 	// Set Range Functions
@@ -209,10 +234,37 @@ public:
 	void setButton(uint8_t button, uint8_t value);
 	void pressButton(uint8_t button);
 	void releaseButton(uint8_t button);
-
 	void setHatSwitch(int8_t hatSwitch, int16_t value);
 
 	void sendState();
+
+	//force feedback Functions
+	int32_t recv_from_usb();//receive pid report from host
+	///set gain functions
+	void setTotalGain(uint8_t _gain) { TotalGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setConstantGain(uint8_t _gain) { ConstantGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setRampGain(uint8_t _gain) { RampGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSquareGain(uint8_t _gain) { SquareGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSineGain(uint8_t _gain) { SineGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setTriangleGain(uint8_t _gain) { TriangleGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSawtoothDownGain(uint8_t _gain) { SawtoothDownGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSawtoothUpGain(uint8_t _gain) { SawtoothUpGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSpringGain(uint8_t _gain) { SpringGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setDamperGain(uint8_t _gain) { DamperGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setInerrtiaGain(uint8_t _gain) { InerrtiaGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setFrictionGain(uint8_t _gain) { FrictionGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setCustomGain(uint8_t _gain) { CustomGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	///set effect params funtions
+	void setSpringPosition(int32_t value) { springPosition = value; };//set effect spring param
+	void setSpringMaxPosition(int32_t value) { springMaxPosition = value; };//set effect spring param
+	void setDamperVelocity(int32_t value) { damperVelocity = value; };//set effect damper param
+	void setDamperMaxVelocity(int32_t value) { damperMaxVelocity = value; };//set effect damper param
+	void setInertiaAcceleration(int32_t value) { inertiaAcceleration = value; };//set effect inertia param
+	void setInertiaMaxAcceleration(int32_t value) { inertiaMaxAcceleration = value; };//set effect inertia param
+	void setFrictionPositionChange(int32_t value) { frictionPositionChange = value; };//set effect friction param
+	void setFrictionMaxPositionChange(int32_t value) { frictionMaxPositionChange = value; };//set effect friction param
+	///force calculate funtion
+	int32_t forceCalculator();
 };
 
 #endif // !defined(_USING_DYNAMIC_HID)

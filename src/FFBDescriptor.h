@@ -68,7 +68,7 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	  0x09, 0x42,           // USAGE (42)
 	  0x09, 0x43,           // USAGE (43)
 	  0x09, 0x28,           // USAGE (28)
-	  0x09, 0x28,           //      Usage (ET Custom Force Data)
+	  0x09, 0x28,           // Usage (ET Custom Force Data)
 	  0x15, 0x01,           //       Logical Minimum (1)
 	  0x25, 0x0C,           //       Logical Maximum (12)
 	  0x35, 0x01,           //       Physical Minimum (1)
@@ -110,8 +110,8 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	0x09, 0x55,           //    Usage (Axes Enable)
 	0xA1, 0x02,           //      Collection Datalink (Logical)
 	  0x05, 0x01,           //        Usage Page (Generic Desktop)
-	  0x09, 0x30,           //        Usage (X)
-	  0x09, 0x31,           //        Usage (Y)
+	  0x09, 0x30,           //        Usage (X)//
+	  0x09, 0x31,           //        Usage (Y)//
 	  0x15, 0x00,           //        Logical Minimum (0)
 	  0x25, 0x01,           //        Logical Maximum (1)
 	  0x75, 0x01,           //        Report Size (1)
