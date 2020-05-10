@@ -115,11 +115,11 @@ private:
 	uint8_t SquareGain        = FORCE_FEEDBACK_MAXGAIN;
 	uint8_t SineGain          = FORCE_FEEDBACK_MAXGAIN;
 	uint8_t TriangleGain      = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SawtoothDownGain  = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SawtoothUpGain    = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SawToothDownGain  = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t SawToothUpGain    = FORCE_FEEDBACK_MAXGAIN;
 	uint8_t SpringGain        = FORCE_FEEDBACK_MAXGAIN;
 	uint8_t DamperGain        = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t InerrtiaGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t InertiaGain      = FORCE_FEEDBACK_MAXGAIN;
 	uint8_t FrictionGain      = FORCE_FEEDBACK_MAXGAIN;
 	uint8_t CustomGain        = FORCE_FEEDBACK_MAXGAIN;
 
@@ -239,7 +239,7 @@ public:
 	void sendState();
 
 	//force feedback Functions
-	int32_t recv_from_usb();//receive pid report from host
+	int32_t getForce();
 	///set gain functions
 	void setTotalGain(uint8_t _gain) { TotalGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setConstantGain(uint8_t _gain) { ConstantGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
@@ -247,11 +247,11 @@ public:
 	void setSquareGain(uint8_t _gain) { SquareGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setSineGain(uint8_t _gain) { SineGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setTriangleGain(uint8_t _gain) { TriangleGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSawtoothDownGain(uint8_t _gain) { SawtoothDownGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSawtoothUpGain(uint8_t _gain) { SawtoothUpGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSawToothDownGain(uint8_t _gain) { SawToothDownGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setSawToothUpGain(uint8_t _gain) { SawToothUpGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setSpringGain(uint8_t _gain) { SpringGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setDamperGain(uint8_t _gain) { DamperGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setInerrtiaGain(uint8_t _gain) { InerrtiaGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
+	void setInertiaGain(uint8_t _gain) { InertiaGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setFrictionGain(uint8_t _gain) { FrictionGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setCustomGain(uint8_t _gain) { CustomGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	///set effect params funtions
@@ -264,6 +264,17 @@ public:
 	void setFrictionPositionChange(int32_t value) { frictionPositionChange = value; };//set effect friction param
 	void setFrictionMaxPositionChange(int32_t value) { frictionMaxPositionChange = value; };//set effect friction param
 	///force calculate funtion
+	float NormalizeRange(int32_t x, int32_t maxValue);
+	int32_t ApplyEnvelope(volatile TEffectState& effect, int32_t value);
+	int32_t ApplyGain(uint8_t value, uint8_t gain);
+	int32_t ConstantForceCalculator(volatile TEffectState& effect);
+	int32_t RampForceCalculator(volatile TEffectState& effect);
+	int32_t SquareForceCalculator(volatile TEffectState& effect);
+	int32_t SinForceCalculator(volatile TEffectState& effect);
+	int32_t TriangleForceCalculator(volatile TEffectState& effect);
+	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
+	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
+	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric);
 	int32_t forceCalculator();
 };
 

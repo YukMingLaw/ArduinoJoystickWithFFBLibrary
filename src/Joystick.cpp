@@ -485,7 +485,7 @@ void Joystick_::begin(bool initAutoSendState)
 	sendState();
 }
 
-int32_t Joystick_::recv_from_usb() {
+int32_t Joystick_::getForce() {
 	DynamicHID().RecvfromUsb();
 	return forceCalculator();
 }
@@ -506,55 +506,235 @@ int32_t Joystick_::forceCalculator() {
 				force += ConstantForceCalculator(effect) * ConstantGain;
 				break;
 			case USB_EFFECT_RAMP://2
-			   //Serial.println("EFFECT_RAMP");
-			   //force += RampForceCalculator(effect) * rampGain;
+			   force += RampForceCalculator(effect) * RampGain;
 				break;
 			case USB_EFFECT_SQUARE://3
-			   //Serial.println("EFFECT_SQUARE");
-			   //force += SquareForceCalculator(effect) * squareGain;
+			   force += SquareForceCalculator(effect) * SquareGain;
 				break;
 			case USB_EFFECT_SINE://4
-				force += SinForceCalculator(effect) * sinGain;
+				force += SinForceCalculator(effect) * SineGain;
 				break;
 			case USB_EFFECT_TRIANGLE://5
-			   //Serial.println("EFFECT_TRIANGLE");
-			   //force += TriangleForceCalculator(effect) * triangleGain;
+			    force += TriangleForceCalculator(effect) * TriangleGain;
 				break;
 			case USB_EFFECT_SAWTOOTHDOWN://6
-			   //Serial.println("EFFECT_SAWTOOTHDOWN");
+				force += SawtoothDownForceCalculator(effect)* SawToothDownGain;
 				break;
 			case USB_EFFECT_SAWTOOTHUP://7
-			   //Serial.println("EFFECT_SAWTOOTHUP");
-			   //force += SawtoothDownForceCalculator(effect) * sawToothDownGain;
+			   force += SawtoothUpForceCalculator(effect) * SawToothDownGain;
 				break;
 			case USB_EFFECT_SPRING://8
-				force += ConditionForceCalculator(effect, NormalizeRange(value, ENCODER_MAX_VALUE)) * springGain;
+				force += ConditionForceCalculator(effect, NormalizeRange(springPosition, springMaxPosition)) * SpringGain;
 				break;
 			case USB_EFFECT_DAMPER://9
-			   //Serial.println("EFFECT_DAMPER");
-			   //force += ConditionForceCalculator(effect, NormalizeRange(encoder.currentVelocity, encoder.maxVelocity)) * damperGain;
+			    force += ConditionForceCalculator(effect, NormalizeRange(damperVelocity, damperMaxVelocity)) * DamperGain;
 				break;
 			case USB_EFFECT_INERTIA://10
-			   //Serial.println("EFFECT_INERTIA");
-			   //if ( encoder.currentAcceleration < 0 and encoder.positionChange < 0) {
-				 //force += ConditionForceCalculator(effect, abs(NormalizeRange(encoder.currentAcceleration, encoder.maxAcceleration))) * inertiaGain;
-			   //} else if ( encoder.currentAcceleration < 0 and encoder.positionChange > 0) {
-				 //force -= ConditionForceCalculator(effect, abs(NormalizeRange(encoder.currentAcceleration, encoder.maxAcceleration))) * inertiaGain;
-			   //}
+			    if ( inertiaAcceleration < 0 && frictionPositionChange < 0) {
+				  force += ConditionForceCalculator(effect, abs(NormalizeRange(inertiaAcceleration, inertiaMaxAcceleration))) * InertiaGain;
+			    } else if ( inertiaAcceleration < 0 && frictionPositionChange > 0) {
+				  force -= ConditionForceCalculator(effect, abs(NormalizeRange(inertiaAcceleration, inertiaMaxAcceleration))) * InertiaGain;
+			    }
 				break;
 			case USB_EFFECT_FRICTION://11
-			   //force += ConditionForceCalculator(effect, NormalizeRange(encoder.positionChange, encoder.maxPositionChange)) * frictionGain;
-			   //Serial.println("EFFECT_FRICTION");
+			    force += ConditionForceCalculator(effect, NormalizeRange(frictionPositionChange, frictionMaxPositionChange)) * FrictionGain;
 				break;
 			case USB_EFFECT_CUSTOM://12
-			   //Serial.println("EFFECT_CUSTOM");
 				break;
 			}
 			effect.elapsedTime = (uint64_t)millis() - effect.startTime;
 		}
 	}
-	force = (int32_t)((float)1.00 * force * totalGain / 10000); // each effect gain * total effect gain = 10000
+	force = (int32_t)((float)1.00 * force * TotalGain / 10000); // each effect gain * total effect gain = 10000
 	return constrain(force, -250, 250);
+}
+
+int32_t Joystick_::ConstantForceCalculator(volatile TEffectState& effect) 
+{
+	float tempforce = (float)effect.magnitude * effect.gain / 255;
+	tempforce = map(tempforce, -10000, 10000, -255, 255);
+	return (int32_t)tempforce;
+}
+
+int32_t Joystick_::RampForceCalculator(volatile TEffectState& effect) 
+{
+	int32_t rampForce = effect.startMagnitude + effect.elapsedTime * (effect.endMagnitude - effect.startMagnitude) / effect.duration;
+	return rampForce;
+}
+
+int32_t Joystick_::SquareForceCalculator(volatile TEffectState& effect)
+{
+	int32_t offset = effect.offset * 2;
+	uint32_t magnitude = effect.magnitude;
+	uint32_t elapsedTime = effect.elapsedTime;
+	uint32_t phase = effect.phase;
+	uint32_t period = effect.period;
+
+	int32_t maxMagnitude = offset + magnitude;
+	int32_t minMagnitude = offset - magnitude;
+	uint32_t phasetime = (phase * period) / 255;
+	uint32_t timeTemp = elapsedTime + phasetime;
+	uint32_t reminder = timeTemp % period;
+	int32_t tempforce;
+	if (reminder > (period / 2)) tempforce = minMagnitude;
+	else tempforce = maxMagnitude;
+	return ApplyEnvelope(effect, tempforce);
+}
+
+int32_t Joystick_::SinForceCalculator(volatile TEffectState& effect) 
+{
+	float offset = effect.offset * 2;
+	float magnitude = effect.magnitude;
+	float phase = effect.phase;
+	float timeTemp = effect.elapsedTime;
+	float period = effect.period;
+	//  float angle = ((timeTemp / period) + (phase / 255) * period) * 2 * PI;
+	float angle = ((timeTemp / period) * 2 * PI + (float)(phase / 36000));
+	float sine = sin(angle);
+	float tempforce = sine * magnitude;
+	tempforce += offset;
+	return ApplyEnvelope(effect, tempforce);
+}
+
+int32_t Joystick_::TriangleForceCalculator(volatile TEffectState& effect)
+{
+	float offset = effect.offset * 2;
+	float magnitude = effect.magnitude;
+	float elapsedTime = effect.elapsedTime;
+	uint32_t phase = effect.phase;
+	uint32_t period = effect.period;
+	float periodF = effect.period;
+
+	float maxMagnitude = offset + magnitude;
+	float minMagnitude = offset - magnitude;
+	uint32_t phasetime = (phase * period) / 255;
+	uint32_t timeTemp = elapsedTime + phasetime;
+	float reminder = timeTemp % period;
+	float slope = ((maxMagnitude - minMagnitude) * 2) / periodF;
+	float tempforce = 0;
+	if (reminder > (periodF / 2)) tempforce = slope * (periodF - reminder);
+	else tempforce = slope * reminder;
+	tempforce += minMagnitude;
+	return ApplyEnvelope(effect, tempforce);
+}
+
+int32_t Joystick_::SawtoothDownForceCalculator(volatile TEffectState& effect) 
+{
+	float offset = effect.offset * 2;
+	float magnitude = effect.magnitude;
+	float elapsedTime = effect.elapsedTime;
+	float phase = effect.phase;
+	uint32_t period = effect.period;
+	float periodF = effect.period;
+
+	float maxMagnitude = offset + magnitude;
+	float minMagnitude = offset - magnitude;
+	int32_t phasetime = (phase * period) / 255;
+	uint32_t timeTemp = elapsedTime + phasetime;
+	float reminder = timeTemp % period;
+	float slope = (maxMagnitude - minMagnitude) / periodF;
+	float tempforce = 0;
+	tempforce = slope * (period - reminder);
+	tempforce += minMagnitude;
+	return ApplyEnvelope(effect, tempforce);
+}
+
+int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect) 
+{
+	float offset = effect.offset * 2;
+	float magnitude = effect.magnitude;
+	float elapsedTime = effect.elapsedTime;
+	uint32_t phase = effect.phase;
+	uint32_t period = effect.period;
+	float periodF = effect.period;
+
+	float maxMagnitude = offset + magnitude;
+	float minMagnitude = offset - magnitude;
+	int32_t phasetime = (phase * period) / 255;
+	uint32_t timeTemp = elapsedTime + phasetime;
+	float reminder = timeTemp % period;
+	float slope = (maxMagnitude - minMagnitude) / periodF;
+	float tempforce = 0;
+	tempforce = slope * reminder;
+	tempforce += minMagnitude;
+	return ApplyEnvelope(effect, tempforce);
+}
+
+int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float metric)
+{
+	float deadBand = effect.deadBand;
+	float cpOffset = effect.cpOffset;
+	float negativeCoefficient = -effect.negativeCoefficient;
+	float negativeSaturation = -effect.negativeSaturation;
+	float positiveSaturation = effect.positiveSaturation;
+	float positiveCoefficient = effect.positiveCoefficient;
+	float  tempForce = 0;
+	if (metric < (cpOffset - deadBand)) {
+		//    float tempForce = (metric - (float)1.00*(cpOffset - deadBand)/10000) * negativeCoefficient;
+		tempForce = ((float)1.00 * (cpOffset - deadBand) / 10000 - metric) * negativeCoefficient;
+		//    tempForce = (tempForce < negativeSaturation ? negativeSaturation : tempForce); I dont know why negativeSaturation = 55536.00 after negativeSaturation = -effect.negativeSaturation;
+		tempForce = (tempForce < (-effect.negativeCoefficient) ? (-effect.negativeCoefficient) : tempForce);
+	}
+	else if (metric > (cpOffset + deadBand)) {
+		tempForce = (metric - (float)1.00 * (cpOffset + deadBand) / 10000) * positiveCoefficient;
+		tempForce = (tempForce > positiveSaturation ? positiveSaturation : tempForce);
+	}
+	else return 0;
+	tempForce = tempForce * effect.gain / 255;
+	switch (effect.effectType) {
+	case  USB_EFFECT_DAMPER:
+		//tempForce = damperFilter.filterIn(tempForce);
+		break;
+	case USB_EFFECT_INERTIA:
+		//tempForce = interiaFilter.filterIn(tempForce);
+		break;
+	case USB_EFFECT_FRICTION:
+		//tempForce = frictionFilter.filterIn(tempForce);
+		break;
+	default:
+		break;
+	}
+	tempForce = map(tempForce, -10000, 10000, -255, 255);
+	return (int32_t)tempForce;
+}
+
+float Joystick_::NormalizeRange(int32_t x, int32_t maxValue) {
+	return (float)x * 1.00 / maxValue;
+}
+
+int32_t  Joystick_::ApplyGain(uint8_t value, uint8_t gain)
+{
+	int32_t value_32 = (int16_t)value;
+	return ((value_32 * gain) / 255);
+}
+
+int32_t Joystick_::ApplyEnvelope(volatile TEffectState& effect, int32_t value)
+{
+	int32_t magnitude = ApplyGain(effect.magnitude, effect.gain);
+	int32_t attackLevel = ApplyGain(effect.attackLevel, effect.gain);
+	int32_t fadeLevel = ApplyGain(effect.fadeLevel, effect.gain);
+	int32_t newValue = magnitude;
+	int32_t attackTime = effect.attackTime;
+	int32_t fadeTime = effect.fadeTime;
+	int32_t elapsedTime = effect.elapsedTime;
+	int32_t duration = effect.duration;
+
+	if (elapsedTime < attackTime)
+	{
+		newValue = (magnitude - attackLevel) * elapsedTime;
+		newValue /= attackTime;
+		newValue += attackLevel;
+	}
+	if (elapsedTime > (duration - fadeTime))
+	{
+		newValue = (magnitude - fadeLevel) * (duration - elapsedTime);
+		newValue /= fadeTime;
+		newValue += fadeLevel;
+	}
+
+	newValue *= value;
+	newValue /= 255;
+	return newValue;
 }
 
 void Joystick_::end()
