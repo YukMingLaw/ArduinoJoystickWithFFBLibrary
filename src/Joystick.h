@@ -133,6 +133,20 @@ private:
 	int32_t frictionPositionChange     = 0;
 	int32_t frictionMaxPositionChange  = 0;
 
+	///force calculate funtion
+	float NormalizeRange(int32_t x, int32_t maxValue);
+	int32_t ApplyEnvelope(volatile TEffectState& effect, int32_t value);
+	int32_t ApplyGain(uint8_t value, uint8_t gain);
+	int32_t ConstantForceCalculator(volatile TEffectState& effect);
+	int32_t RampForceCalculator(volatile TEffectState& effect);
+	int32_t SquareForceCalculator(volatile TEffectState& effect);
+	int32_t SinForceCalculator(volatile TEffectState& effect);
+	int32_t TriangleForceCalculator(volatile TEffectState& effect);
+	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
+	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
+	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric);
+	int32_t forceCalculator();
+
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
 	int buildAndSetAxisValue(bool includeAxis, int16_t axisValue, int16_t axisMinimum, int16_t axisMaximum, uint8_t dataLocation[]);
@@ -238,7 +252,7 @@ public:
 
 	void sendState();
 
-	//force feedback Functions
+	//force feedback Interfaces
 	int32_t getForce();
 	///set gain functions
 	void setTotalGain(uint8_t _gain) { TotalGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
@@ -263,19 +277,6 @@ public:
 	void setInertiaMaxAcceleration(int32_t value) { inertiaMaxAcceleration = value; };//set effect inertia param
 	void setFrictionPositionChange(int32_t value) { frictionPositionChange = value; };//set effect friction param
 	void setFrictionMaxPositionChange(int32_t value) { frictionMaxPositionChange = value; };//set effect friction param
-	///force calculate funtion
-	float NormalizeRange(int32_t x, int32_t maxValue);
-	int32_t ApplyEnvelope(volatile TEffectState& effect, int32_t value);
-	int32_t ApplyGain(uint8_t value, uint8_t gain);
-	int32_t ConstantForceCalculator(volatile TEffectState& effect);
-	int32_t RampForceCalculator(volatile TEffectState& effect);
-	int32_t SquareForceCalculator(volatile TEffectState& effect);
-	int32_t SinForceCalculator(volatile TEffectState& effect);
-	int32_t TriangleForceCalculator(volatile TEffectState& effect);
-	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
-	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
-	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric);
-	int32_t forceCalculator();
 };
 
 #endif // !defined(_USING_DYNAMIC_HID)
