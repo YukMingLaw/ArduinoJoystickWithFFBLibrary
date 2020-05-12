@@ -1,104 +1,100 @@
 # Arduino Joystick With Force Feedback Library
 
-## 声明
+## statement
 
-### 这是一个适用于Atmega32UX芯片带力反馈的Joystick库，可用于制作带震动的游戏手柄、带力反馈的游戏方向盘等（飞行摇杆等需要多轴力反馈的设备暂时不支持，后续更新）。
-
-
-## 用法
-### 1. 创建JoyStick对象
-
-| 参数表          | 描述                                     |
-|:---------------|:----------------------------------------|
-| REPORT_ID      | Hid report id 值                         |
-| JOYSTICK_TYPE  | 设备的类型：JOYSTICK，GAMEPAD，MULTI_AXIS |
-| 按钮数量        | 值:`[0-32]`                              |
-| Hat Switch 数量 | 值:`[0,1,2]`                            |
-| X轴使能         | True or False                           |
-| Y轴使能         | True or False                           |
-| Z轴使能         | True or False                           |
-| Rx轴使能        | True or False                           |
-| Ry轴使能        | True or False                           |
-| Rz轴使能        | True or False                           |
-| Rudder使能      | True or False                           |
-| Throttle使能    | True or False                           |
-| Accelerator使能 | True or False                           |
-| Brake使能       | True or False                           |
-| Steering使能    | True or False                           |
-
-##### `Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,8, 0,false, true,true,false, false, false,false, false,false, false, false);`
+### This is a joy library for Atmega32UX chip with force feedback, which can be used to make game handle with vibration, game steering wheel with force feedback, etc. (equipment requiring multi axis force feedback, such as flight rocker, is not supported temporarily, and will be updated later,maybe this week).
 
 
-### 2. 创建好对象后默认绑定X轴Y轴作为力反馈轴，通过下列接口设置各种力的增益:
+## Usage
+### 1. create `JoyStick` object
 
-#### 1）设置总增益
+| params            | describe                                     |
+|:------------------|:---------------------------------------------|
+| REPORT_ID         | Hid report id                                |
+| JOYSTICK_TYPE     | Type of devece：JOYSTICK，GAMEPAD，MULTI_AXIS |
+| button count      | `[0-32]`                                     |
+| Hat Switch count  | `[0,1,2]`                                    |
+| X Axis enable     | True or False                                |
+| Y Axis enable     | True or False                                |
+| Z Axis enable     | True or False                                |
+| Rx Axis enable    | True or False                                |
+| Ry Axis enable    | True or False                                |
+| Rz Axis enable    | True or False                                |
+| Rudder enable     | True or False                                |
+| Throttle enable   | True or False                                |
+| Accelerator enable| True or False                                |
+| Brake enable      | True or False                                |
+| Steering enable   | True or False                                |
+
+`Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_JOYSTICK,8, 0,false, true,true,false, false, false,false, false,false, false, false);`
+
+
+### 2. After the object is created, the x-axis and y-axis are bound as the force feedback axis by default.The gains of various forces effect are set through the following interfaces:
+
+#### 1）set total gain `[0-100]`
 `JoyStick.setTotalGain(uint8_t _gain);`
 
-#### 2）设置恒定力增益
+#### 2）set constant gain `[0-100]`
 `JoyStick.setConstantGain(uint8_t _gain);`
 
-#### 3）设置斜坡力增益
+#### 3）set ramp gain `[0-100]`
 `JoyStick.setRampGain(uint8_t _gain);`
 
-#### 4）设置方波力增益
+#### 4）set square gain `[0-100]`
 `JoyStick.setSquareGain(uint8_t _gain);`
 
-#### 5）设置余弦力增益
+#### 5）set sine gain `[0-100]`
 `JoyStick.setSineGain(uint8_t _gain);`
 
-#### 6）设置三角力增益
+#### 6）set triangle gain `[0-100]`
 `JoyStick.setTriangleGain(uint8_t _gain);`
 
-#### 7）设置下锯齿力增益
+#### 7）set sawtoothdown gain `[0-100]`
 `JoyStick.setSawToothDownGain(uint8_t _gain);`
 
-#### 8）设置上锯齿力增益
+#### 8）set sawtoothup gain `[0-100]`
 `JoyStick.setSawToothUpGain(uint8_t _gain);`
 
-#### 9）设置弹簧力增益
+#### 9）set spring gain `[0-100]`
 `JoyStick.setSpringGain(uint8_t _gain);`
 
-#### 10）设置减震力增益
+#### 10）set damper gain `[0-100]`
 `JoyStick.setDamperGain(uint8_t _gain);`
 
-#### 11）设置惯性力增益
+#### 11）set intertia gain `[0-100]`
 `JoyStick.setInertiaGain(uint8_t _gain);`
 
-#### 12）设置摩擦力增益
+#### 12）set friction gain `[0-100]`
 `JoyStick.setFrictionGain(uint8_t _gain);`
 
-#### 13）设置自定义力增益
+#### 13）set custom gain `[0-100]`
 `JoyStick.setCustomGain(uint8_t _gain);`
 
-### 3.通过下列接口设置spring效果，Damper效果，Inertia效果，Friction效果参数：
+### 3.Set the parameters of spring effect, damper effect, inertia effect and friction effect through the following interfaces:
 
-#### 1）设置弹簧力对象位置参数
+#### 1）If you need to use the spring effect, set the following parameters.`Position` is the current position of the force feedback axis. For example, connect the encoder with the action axis,the current encoder value is `Positon` and the max encoder value is `MaxPosition`.
 ` JoyStick.setSpringPosition(int32_t value)；`
 
-#### 2）设置弹簧力对象最大位置参数
 ` JoyStick.setSpringMaxPosition(int32_t value)；`
 
-#### 3）设置减震力对象速度参数
+#### 2）If you need to use the damper effect, set the following parameters.`Velocity` is the current velocity of the force feedback axis.
 ` JoyStick.setDamperVelocity(int32_t value)；`
 
-#### 4）设置减震力对象最大速度参数
 ` JoyStick.setDamperMaxVelocity(int32_t value)；`
 
-#### 5）设置惯性力加速度参数
+#### 3）If you need to use the inertia effect, set the following parameters.`Acceleration` is the current acceleration of the force feedback axis.
 ` JoyStick.setInertiaAcceleration(int32_t value)；`
 
-#### 6）设置惯性力最大加速度参数
 ` JoyStick.setInertiaMaxAcceleration(int32_t value)；`
 
-#### 7）设置摩擦力位置差参数
+#### 4）If you need to use the friction effect, set the following parameters.`PositionChange` is the position difference of the force feedback axis.
 ` JoyStick.setFrictionPositionChange(int32_t value)；`
 
-#### 8）设置摩擦力最大位置差参数
 ` JoyStick.setFrictionMaxPositionChange(int32_t value)；`
 
-### 4.通过：`JoyStick.getForce()`获取计算好的力，返回值范围`[-255,255]`,目前仅支持单轴；
+### 4.Finally,get the force value with`JoyStick.getForce()`,return type int32,range`[-255,255]`,only one axis is supported；
 
-## 引用
+## Ref
 
-### 本库基于[Heironimus](https://github.com/MHeironimus/ArduinoJoystickLibrary) 跟 [hoantv](https://github.com/hoantv/VNWheel) 的库修改与整理，非常感谢他们的工作。
+### This library is based on [Heironimus](https://github.com/MHeironimus/ArduinoJoystickLibrary) and [hoantv](https://github.com/hoantv/VNWheel) 's work，very grateful for their work.
 
