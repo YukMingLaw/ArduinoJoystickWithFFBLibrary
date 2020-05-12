@@ -1,6 +1,6 @@
 # Arduino Joystick With Force Feedback Library
 
-## statement
+## Statement
 
 ### This is a joy library for Atmega32UX chip with force feedback, which can be used to make game handle with vibration, game steering wheel with force feedback, etc. (equipment requiring multi axis force feedback, such as flight rocker, is not supported temporarily, and will be updated later,maybe this week).
 
@@ -92,7 +92,15 @@
 
 ` JoyStick.setFrictionMaxPositionChange(int32_t value)；`
 
-### 4.Finally,get the force value with`JoyStick.getForce()`,return type int32,range`[-255,255]`,only one axis is supported；
+### 4.Finally,get the force value with
+
+`JoyStick.getForce()`
+
+return type `int32`
+
+range`[-255,255]`
+
+only one axis is supported；
 
 ## Ref
 
