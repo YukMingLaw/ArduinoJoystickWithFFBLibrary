@@ -750,7 +750,7 @@ void Joystick_::ApplyDirection(volatile TEffectState& effect, int32_t force, int
 	{
 		float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
 		forces[0] += (int32_t)(sin(angle) * force);
-		forces[1] += (int32_t)(cos(angle) * force);
+		forces[1] += (int32_t)(-1 * cos(angle) * force);
 	}
 	else
 	{
@@ -762,7 +762,7 @@ void Joystick_::ApplyDirection(volatile TEffectState& effect, int32_t force, int
 		if (effect.enableAxis & Y_AXIS_ENABLE)
 		{
 			float angle = (directionY * 360.0 / 255.0) * DEG_TO_RAD;
-			forces[1] += (int32_t)(cos(angle) * force);
+			forces[1] += (int32_t)(-1 * cos(angle) * force);
 		}
 	}
 }

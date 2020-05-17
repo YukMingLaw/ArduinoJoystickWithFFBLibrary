@@ -2,10 +2,13 @@
 
 ## 声明
 
-### 这是一个适用于Atmega32UX芯片带力反馈的Joystick库，可用于制作带震动的游戏手柄、带力反馈的游戏方向盘等（飞行摇杆等需要多轴力反馈的设备暂时不支持，后续更新）。
+### 这是一个适用于Atmega32UX芯片带力反馈的Joystick库，可用于制作带震动的游戏手柄、带力反馈的游戏方向盘等。支持两轴力反馈。
 
 
 ## 用法
+
+### 0.例程：`examples/JoystickWithFFB/JoystickWithFFB.ino`
+
 ### 1. 创建JoyStick对象
 
 | 参数表          | 描述                                     |
@@ -96,7 +99,9 @@
 #### 8）设置摩擦力最大位置差参数
 ` JoyStick.setFrictionMaxPositionChange(int32_t value)；`
 
-### 4.通过：`JoyStick.getForce()`获取计算好的力，返回值范围`[-255,255]`,目前仅支持单轴；
+### 4.通过：`JoyStick.getForce(int32_t* forces)`获取计算好的力
+
+#### 传入参数为一个长度为2的int32_t数组，输出范围`[-255,255]`；
 
 ## 引用
 

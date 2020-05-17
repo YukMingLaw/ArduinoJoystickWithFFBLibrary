@@ -2,10 +2,13 @@
 
 ## Statement
 
-### This is a joy library for Atmega32UX chip with force feedback, which can be used to make game handle with vibration, game steering wheel with force feedback, etc. (equipment requiring multi axis force feedback, such as flight rocker, is not supported temporarily, and will be updated later,maybe this week).
+### This is a joy library for Atmega32UX chip with force feedback, which can be used to make game handle with vibration, game steering wheel with force feedback, etc.Multi-axis-force-feedback feature is added.
 
 
 ## Usage
+
+### 0. example：`examples/JoystickWithFFB/JoystickWithFFB.ino`
+
 ### 1. create `JoyStick` object
 
 | params            | describe                                     |
@@ -94,13 +97,17 @@
 
 ### 4.Finally,get the force value with
 
-`JoyStick.getForce()`
+`JoyStick.getForce(int32_t* forces)`
 
-return type `int32`
+params `int32_t* forces` is an `int32` array of length 2
+
+`forces[0]` is the X-Axis force data
+
+`forces[1]` is the Y-Axis force data
+
+return type `void`
 
 range`[-255,255]`
-
-only one axis is supported；
 
 ## Ref
 
