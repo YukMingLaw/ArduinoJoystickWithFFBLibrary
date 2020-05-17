@@ -54,7 +54,12 @@
 #define JOYSTICK_TYPE_JOYSTICK             0x04
 #define JOYSTICK_TYPE_GAMEPAD              0x05
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
+
+#define DIRECTION_ENABLE                   0x04
+#define X_AXIS_ENABLE                      0x01
+#define Y_AXIS_ENABLE                      0x02
 #define FORCE_FEEDBACK_MAXGAIN               100
+#define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
 
 class Joystick_
 {
@@ -145,7 +150,8 @@ private:
 	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
 	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
 	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric);
-	int32_t forceCalculator();
+	void forceCalculator(int32_t* forces);
+	void ApplyDirection(volatile TEffectState& effect, int32_t force, int32_t* forces);
 
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
@@ -253,7 +259,7 @@ public:
 	void sendState();
 
 	//force feedback Interfaces
-	int32_t getForce();
+	void getForce(int32_t* forces);
 	///set gain functions
 	void setTotalGain(uint8_t _gain) { TotalGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
 	void setConstantGain(uint8_t _gain) { ConstantGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };

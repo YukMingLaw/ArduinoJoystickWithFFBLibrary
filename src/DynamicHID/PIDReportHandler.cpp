@@ -241,13 +241,6 @@ void PIDReportHandler::UppackUsbData(uint8_t* data, uint16_t len)
 	switch (data[0])    // reportID
 	{
 	case 1:
-		Serial.println("SetEffect");
-		for (int i = 0; i < len; i++) {
-			Serial.print("0x");
-			Serial.print(data[i], HEX);
-			Serial.print(" ");
-		}
-		Serial.println("");
 		SetEffect((USB_FFBReport_SetEffect_Output_Data_t*)data);
 		break;
 	case 2:
