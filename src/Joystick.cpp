@@ -490,63 +490,68 @@ void Joystick_::getForce(int32_t* forces) {
 	forceCalculator(forces);
 }
 
+int32_t getEffectForce(TEffectState& effect,Gains _gains,EffectParams _effect_params){
+    switch (effect.effectType)
+    {
+	    case USB_EFFECT_CONSTANT://1
+	        force = ConstantForceCalculator(effect) * _gains.constantGain;
+	        break;
+	    case USB_EFFECT_RAMP://2
+	    	force = RampForceCalculator(effect) * _gains.rampGain;
+	    	break;
+	    case USB_EFFECT_SQUARE://3
+	    	force = SquareForceCalculator(effect) * _gains.squareGain;
+	    	break;
+	    case USB_EFFECT_SINE://4
+	    	force = SinForceCalculator(effect) * _gains.sineGain;
+	    	break;
+	    case USB_EFFECT_TRIANGLE://5
+	    	force = TriangleForceCalculator(effect) * _gains.triangleGain;
+	    	break;
+	    case USB_EFFECT_SAWTOOTHDOWN://6
+	    	force = SawtoothDownForceCalculator(effect) * _gains.sawtoothdownGain;
+	    	break;
+	    case USB_EFFECT_SAWTOOTHUP://7
+	    	force = SawtoothUpForceCalculator(effect) * _gains.sawtoothupGain;
+	    	break;
+	    case USB_EFFECT_SPRING://8
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.springPosition, _effect_params.springMaxPosition)) * _gains.springGain;
+	    	break;
+	    case USB_EFFECT_DAMPER://9
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, _effect_params.damperMaxVelocity)) * _gains.damperGain;
+	    	break;
+	    case USB_EFFECT_INERTIA://10
+	    	if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange < 0) {
+	    		force = ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration))) * _gains.inertiaGain;
+	    	}
+	    	else if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange > 0) {
+	    		force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration))) * _gains.inertiaGain;
+	    	}
+	    	break;
+	    case USB_EFFECT_FRICTION://11
+	    		force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange)) * _gains.frictionGain;
+	    		break;
+	    case USB_EFFECT_CUSTOM://12
+	    		break;
+	    }
+	    effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+}
+
+
 void Joystick_::forceCalculator(int32_t* forces) {
-	int32_t force = 0;
-	for (int id = 0; id < MAX_EFFECTS; id++) {
-		volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
-		if ((effect.state == MEFFECTSTATE_PLAYING) &&
-			((effect.elapsedTime <= effect.duration) ||
-			(effect.duration == USB_DURATION_INFINITE)) &&
-			!DynamicHID().pidReportHandler.devicePaused)
-		{
-			switch (effect.effectType)
-			{
-				float tempforce;
-			case USB_EFFECT_CONSTANT://1
-				force = ConstantForceCalculator(effect) * ConstantGain;
-				break;
-			case USB_EFFECT_RAMP://2
-				force = RampForceCalculator(effect) * RampGain;
-				break;
-			case USB_EFFECT_SQUARE://3
-				force = SquareForceCalculator(effect) * SquareGain;
-				break;
-			case USB_EFFECT_SINE://4
-				force = SinForceCalculator(effect) * SineGain;
-				break;
-			case USB_EFFECT_TRIANGLE://5
-				force = TriangleForceCalculator(effect) * TriangleGain;
-				break;
-			case USB_EFFECT_SAWTOOTHDOWN://6
-				force = SawtoothDownForceCalculator(effect) * SawToothDownGain;
-				break;
-			case USB_EFFECT_SAWTOOTHUP://7
-				force = SawtoothUpForceCalculator(effect) * SawToothDownGain;
-				break;
-			case USB_EFFECT_SPRING://8
-				force = ConditionForceCalculator(effect, NormalizeRange(springPosition, springMaxPosition)) * SpringGain;
-				break;
-			case USB_EFFECT_DAMPER://9
-				force = ConditionForceCalculator(effect, NormalizeRange(damperVelocity, damperMaxVelocity)) * DamperGain;
-				break;
-			case USB_EFFECT_INERTIA://10
-				if (inertiaAcceleration < 0 && frictionPositionChange < 0) {
-					force = ConditionForceCalculator(effect, abs(NormalizeRange(inertiaAcceleration, inertiaMaxAcceleration))) * InertiaGain;
-				}
-				else if (inertiaAcceleration < 0 && frictionPositionChange > 0) {
-					force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(inertiaAcceleration, inertiaMaxAcceleration))) * InertiaGain;
-				}
-				break;
-			case USB_EFFECT_FRICTION://11
-				force = ConditionForceCalculator(effect, NormalizeRange(frictionPositionChange, frictionMaxPositionChange)) * FrictionGain;
-				break;
-			case USB_EFFECT_CUSTOM://12
-				break;
-			}
-			effect.elapsedTime = (uint64_t)millis() - effect.startTime;
-			ApplyDirection(effect, force, forces);
-		}
-	}
+    forces[0] = 0;
+    forces[1] = 0;
+        int32_t force = 0;
+	    for (int id = 0; id < MAX_EFFECTS; id++) {
+	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
+	    	if ((effect.state == MEFFECTSTATE_PLAYING) &&
+	    		((effect.elapsedTime <= effect.duration) ||
+	    		(effect.duration == USB_DURATION_INFINITE)) &&
+	    		!DynamicHID().pidReportHandler.devicePaused)
+	    	{
+
+	    	}
+	    }
 	forces[0] = (int32_t)((float)1.00 * forces[0] * TotalGain / 10000); // each effect gain * total effect gain = 10000
 	forces[1] = (int32_t)((float)1.00 * forces[1] * TotalGain / 10000); // each effect gain * total effect gain = 10000
 	forces[0] = constrain(forces[0], -255, 255);

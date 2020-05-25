@@ -58,8 +58,39 @@
 #define DIRECTION_ENABLE                   0x04
 #define X_AXIS_ENABLE                      0x01
 #define Y_AXIS_ENABLE                      0x02
-#define FORCE_FEEDBACK_MAXGAIN               100
+#define FFB_AXIS_COUNT                     0x02
+#define FORCE_FEEDBACK_MAXGAIN              100
 #define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
+
+struct Gains{
+    uint8_t totalGain         = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t constantGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t rampGain          = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t squareGain        = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t sineGain          = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t triangleGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t sawtoothdownGain  = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t sawtoothupGain    = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t springGain        = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t damperGain        = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t inertiaGain       = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t frictionGain      = FORCE_FEEDBACK_MAXGAIN;
+	uint8_t customGain        = FORCE_FEEDBACK_MAXGAIN;
+};
+
+struct EffectParams{
+    int32_t springMaxPosition = 0;
+    int32_t springPosition = 0;
+
+    int32_t damperMaxVelocity = 0;
+    int32_t damperVelocity = 0;
+
+    int32_t inertiaMaxAcceleration = 0;
+    int32_t inertiaAcceleration = 0;
+
+    int32_t frictionMaxPositionChange = 0;
+    int32_t frictionPositionChange = 0;
+};
 
 class Joystick_
 {
@@ -114,29 +145,10 @@ private:
 	uint8_t                  _hidReportSize; 
 
 	//force feedback gain
-	uint8_t TotalGain         = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t ConstantGain      = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t RampGain          = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SquareGain        = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SineGain          = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t TriangleGain      = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SawToothDownGain  = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SawToothUpGain    = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t SpringGain        = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t DamperGain        = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t InertiaGain      = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t FrictionGain      = FORCE_FEEDBACK_MAXGAIN;
-	uint8_t CustomGain        = FORCE_FEEDBACK_MAXGAIN;
+	Gains* m_gains;
 
 	//force feedback effect params
-	int32_t springPosition             = 0;
-	int32_t springMaxPosition          = 0;
-	int32_t damperVelocity             = 0;
-	int32_t damperMaxVelocity          = 0;
-	int32_t inertiaAcceleration        = 0;
-	int32_t inertiaMaxAcceleration     = 0;
-	int32_t frictionPositionChange     = 0;
-	int32_t frictionMaxPositionChange  = 0;
+	EffectParams* m_effect_params;
 
 	///force calculate funtion
 	float NormalizeRange(int32_t x, int32_t maxValue);
@@ -260,29 +272,22 @@ public:
 
 	//force feedback Interfaces
 	void getForce(int32_t* forces);
-	///set gain functions
-	void setTotalGain(uint8_t _gain) { TotalGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setConstantGain(uint8_t _gain) { ConstantGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setRampGain(uint8_t _gain) { RampGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSquareGain(uint8_t _gain) { SquareGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSineGain(uint8_t _gain) { SineGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setTriangleGain(uint8_t _gain) { TriangleGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSawToothDownGain(uint8_t _gain) { SawToothDownGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSawToothUpGain(uint8_t _gain) { SawToothUpGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setSpringGain(uint8_t _gain) { SpringGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setDamperGain(uint8_t _gain) { DamperGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setInertiaGain(uint8_t _gain) { InertiaGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setFrictionGain(uint8_t _gain) { FrictionGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	void setCustomGain(uint8_t _gain) { CustomGain = _gain > FORCE_FEEDBACK_MAXGAIN ? FORCE_FEEDBACK_MAXGAIN : _gain; };
-	///set effect params funtions
-	void setSpringPosition(int32_t value) { springPosition = value; };//set effect spring param
-	void setSpringMaxPosition(int32_t value) { springMaxPosition = value; };//set effect spring param
-	void setDamperVelocity(int32_t value) { damperVelocity = value; };//set effect damper param
-	void setDamperMaxVelocity(int32_t value) { damperMaxVelocity = value; };//set effect damper param
-	void setInertiaAcceleration(int32_t value) { inertiaAcceleration = value; };//set effect inertia param
-	void setInertiaMaxAcceleration(int32_t value) { inertiaMaxAcceleration = value; };//set effect inertia param
-	void setFrictionPositionChange(int32_t value) { frictionPositionChange = value; };//set effect friction param
-	void setFrictionMaxPositionChange(int32_t value) { frictionMaxPositionChange = value; };//set effect friction param
+	//set gain functions
+	int8_t setGains(Gains* _gains){
+	    if(_gains != nullptr){
+	        m_gains = _gains;
+	        return 0;
+	    }
+	    return -1;
+	};
+	//set effect params funtions
+	int8_t setEffectParams(EffectParams* _effect_params){
+	    if(_effect_params != nullptr){
+	        m_effect_params = _effect_params;
+	        return 0;
+	    }
+	    return -1;
+	};
 };
 
 #endif // !defined(_USING_DYNAMIC_HID)
