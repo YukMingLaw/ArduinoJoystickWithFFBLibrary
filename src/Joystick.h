@@ -163,8 +163,7 @@ private:
 	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
 	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric);
 	void forceCalculator(int32_t* forces);
-	void ApplyDirection(volatile TEffectState& effect, int32_t force, int32_t* forces);
-
+	int32_t getEffectForce(volatile TEffectState& effect, Gains _gains, EffectParams _effect_params);
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
 	int buildAndSetAxisValue(bool includeAxis, int16_t axisValue, int16_t axisMinimum, int16_t axisMaximum, uint8_t dataLocation[]);
@@ -275,6 +274,7 @@ public:
 	//set gain functions
 	int8_t setGains(Gains* _gains){
 	    if(_gains != nullptr){
+			//it should be added some limition here,but im so tired,it's 2:24 A.M now!
 	        m_gains = _gains;
 	        return 0;
 	    }

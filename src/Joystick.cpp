@@ -490,8 +490,9 @@ void Joystick_::getForce(int32_t* forces) {
 	forceCalculator(forces);
 }
 
-int32_t getEffectForce(TEffectState& effect,Gains _gains,EffectParams _effect_params){
-    switch (effect.effectType)
+int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,EffectParams _effect_params){
+	int32_t force = 0;
+	switch (effect.effectType)
     {
 	    case USB_EFFECT_CONSTANT://1
 	        force = ConstantForceCalculator(effect) * _gains.constantGain;
@@ -535,6 +536,7 @@ int32_t getEffectForce(TEffectState& effect,Gains _gains,EffectParams _effect_pa
 	    		break;
 	    }
 	    effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+		return force;
 }
 
 
@@ -549,11 +551,33 @@ void Joystick_::forceCalculator(int32_t* forces) {
 	    		(effect.duration == USB_DURATION_INFINITE)) &&
 	    		!DynamicHID().pidReportHandler.devicePaused)
 	    	{
+				float directionX = effect.directionX;
+				float directionY = effect.directionY;
+
+				if (effect.enableAxis == DIRECTION_ENABLE)
+				{
+					float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
+					forces[0] += (int32_t)(sin(angle) * getEffectForce(effect,m_gains[0], m_effect_params[0]));
+					forces[1] += (int32_t)(-1 * cos(angle) * getEffectForce(effect, m_gains[1], m_effect_params[1]));
+				}
+				else
+				{
+					if (effect.enableAxis & X_AXIS_ENABLE)
+					{
+						float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
+						forces[0] += (int32_t)(sin(angle) * getEffectForce(effect, m_gains[0], m_effect_params[0]));
+					}
+					if (effect.enableAxis & Y_AXIS_ENABLE)
+					{
+						float angle = (directionY * 360.0 / 255.0) * DEG_TO_RAD;
+						forces[1] += (int32_t)(-1 * cos(angle) * getEffectForce(effect, m_gains[1], m_effect_params[1]));
+					}
+				}
 
 	    	}
 	    }
-	forces[0] = (int32_t)((float)1.00 * forces[0] * TotalGain / 10000); // each effect gain * total effect gain = 10000
-	forces[1] = (int32_t)((float)1.00 * forces[1] * TotalGain / 10000); // each effect gain * total effect gain = 10000
+	forces[0] = (int32_t)((float)1.00 * forces[0] * m_gains[0].totalGain / 10000); // each effect gain * total effect gain = 10000
+	forces[1] = (int32_t)((float)1.00 * forces[1] * m_gains[1].totalGain / 10000); // each effect gain * total effect gain = 10000
 	forces[0] = constrain(forces[0], -255, 255);
 	forces[1] = constrain(forces[1], -255, 255);
 }
@@ -744,32 +768,6 @@ int32_t Joystick_::ApplyEnvelope(volatile TEffectState& effect, int32_t value)
 	newValue *= value;
 	newValue /= 255;
 	return newValue;
-}
-
-void Joystick_::ApplyDirection(volatile TEffectState& effect, int32_t force, int32_t* forces)
-{
-	float directionX = effect.directionX;
-	float directionY = effect.directionY;
-
-	if (effect.enableAxis == DIRECTION_ENABLE)
-	{
-		float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
-		forces[0] += (int32_t)(sin(angle) * force);
-		forces[1] += (int32_t)(-1 * cos(angle) * force);
-	}
-	else
-	{
-		if (effect.enableAxis & X_AXIS_ENABLE)
-		{
-			float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
-			forces[0] += (int32_t)(sin(angle) * force);
-		}
-		if (effect.enableAxis & Y_AXIS_ENABLE)
-		{
-			float angle = (directionY * 360.0 / 255.0) * DEG_TO_RAD;
-			forces[1] += (int32_t)(-1 * cos(angle) * force);
-		}
-	}
 }
 
 void Joystick_::end()

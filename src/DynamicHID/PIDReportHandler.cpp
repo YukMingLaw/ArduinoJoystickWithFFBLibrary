@@ -169,6 +169,14 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 	effect->effectType = data->effectType;
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
+	//Serial.print("dX: ");
+	//Serial.print(effect->directionX);
+	//Serial.print(" dX: ");
+	//Serial.print(effect->directionY);
+	//Serial.print(" eT: ");
+	//Serial.print(effect->effectType);
+	//Serial.print(" eA: ");
+	//Serial.println(effect->enableAxis);
 	//  effect->triggerRepeatInterval;
 	//  effect->samplePeriod;   // 0..32767 ms
 	//  effect->triggerButton;
@@ -241,6 +249,7 @@ void PIDReportHandler::UppackUsbData(uint8_t* data, uint16_t len)
 	switch (data[0])    // reportID
 	{
 	case 1:
+		//Serial.println("SetEffect");
 		SetEffect((USB_FFBReport_SetEffect_Output_Data_t*)data);
 		break;
 	case 2:
