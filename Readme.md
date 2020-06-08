@@ -172,6 +172,8 @@ range`[-255,255]`
 
 #### **Pay Attention!**
 
+You can test your FFB device with [this tool](https://www.dirks-software.ca/downloads/ForceTest.exe).
+
 **`Joystick.setGains(mygains)` and `Joystick.setEffectParams(myeffectparams)` must be invoked before `JoyStick.getForce(int32_t* forces)`**
 
 ## Ref
