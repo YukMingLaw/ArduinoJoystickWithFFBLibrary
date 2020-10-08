@@ -161,9 +161,9 @@ private:
 	int32_t TriangleForceCalculator(volatile TEffectState& effect);
 	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
 	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
-	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric);
+	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis);
 	void forceCalculator(int32_t* forces);
-	int32_t getEffectForce(volatile TEffectState& effect, Gains _gains, EffectParams _effect_params);
+	int32_t getEffectForce(volatile TEffectState& effect, Gains _gains, EffectParams _effect_params, float angle, uint8_t axis);
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
 	int buildAndSetAxisValue(bool includeAxis, int16_t axisValue, int16_t axisMinimum, int16_t axisMaximum, uint8_t dataLocation[]);

@@ -192,12 +192,22 @@ void PIDReportHandler::SetEnvelope(USB_FFBReport_SetEnvelope_Output_Data_t* data
 
 void PIDReportHandler::SetCondition(USB_FFBReport_SetCondition_Output_Data_t* data, volatile TEffectState* effect)
 {
-	effect->cpOffset = data->cpOffset;
-	effect->positiveCoefficient = data->positiveCoefficient;
-	effect->negativeCoefficient = data->negativeCoefficient;
-	effect->positiveSaturation = data->positiveSaturation;
-	effect->negativeSaturation = data->negativeSaturation;
-	effect->deadBand = data->deadBand;
+    if (data -> parameterBlockOffset == 0 ) {
+        effect->cpOffset = data->cpOffset;
+        effect->positiveCoefficient = data->positiveCoefficient;
+        effect->negativeCoefficient = data->negativeCoefficient;
+        effect->positiveSaturation = data->positiveSaturation;
+        effect->negativeSaturation = data->negativeSaturation;
+        effect->deadBand = data->deadBand;
+    } else {
+        effect->cpOffsetY = data->cpOffset;
+        effect->positiveCoefficientY = data->positiveCoefficient;
+        effect->negativeCoefficientY = data->negativeCoefficient;
+        effect->positiveSaturationY = data->positiveSaturation;
+        effect->negativeSaturationY = data->negativeSaturation;
+        effect->deadBandY = data->deadBand;
+    }
+
 }
 
 void PIDReportHandler::SetPeriodic(USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState* effect)
