@@ -490,12 +490,25 @@ void Joystick_::getForce(int32_t* forces) {
 	forceCalculator(forces);
 }
 
-int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,EffectParams _effect_params, float angle, uint8_t axis){
+int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,EffectParams _effect_params, uint8_t axis){
+
+    uint8_t direction;
+    if (effect.enableAxis == DIRECTION_ENABLE)
+    {
+        direction = effect.directionX;
+    }
+    else
+    {
+        direction = axis == 0 ? effect.directionX : effect.directionY;
+    }
+
+    float angle;
+    angle = (direction * 360.0 / 255.0) * DEG_TO_RAD;
     float angle_ratio;
     if (axis == 0) {
         angle_ratio = sin(angle);
     } else {
-         angle_ratio = -1 * cos(angle);
+        angle_ratio = -1 * cos(angle);
     }
 
 	int32_t force = 0;
@@ -550,39 +563,27 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,Eff
 void Joystick_::forceCalculator(int32_t* forces) {
     forces[0] = 0;
     forces[1] = 0;
-    for (int id = 0; id < MAX_EFFECTS; id++) {
-        volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
-        if ((effect.state == MEFFECTSTATE_PLAYING) &&
-            ((effect.elapsedTime <= effect.duration) ||
-            (effect.duration == USB_DURATION_INFINITE)) &&
-            !DynamicHID().pidReportHandler.devicePaused)
-        {
-            float directionX = effect.directionX;
-            float directionY = effect.directionY;
+        int32_t force = 0;
+	    for (int id = 0; id < MAX_EFFECTS; id++) {
+	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
+	    	if ((effect.state == MEFFECTSTATE_PLAYING) &&
+	    		((effect.elapsedTime <= effect.duration) ||
+	    		(effect.duration == USB_DURATION_INFINITE)) &&
+	    		!DynamicHID().pidReportHandler.devicePaused)
+	    	{
+				if (effect.enableAxis == DIRECTION_ENABLE
+                    || effect.enableAxis & X_AXIS_ENABLE)
+				{
+					forces[0] += (int32_t)(getEffectForce(effect,m_gains[0], m_effect_params[0], 0));
+				}
+				if (effect.enableAxis == DIRECTION_ENABLE
+                    || effect.enableAxis & Y_AXIS_ENABLE)
+				{
+					forces[1] += (int32_t)(getEffectForce(effect,m_gains[1], m_effect_params[1], 1));
+				}
 
-            if (effect.enableAxis == DIRECTION_ENABLE)
-            {
-                float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
-                forces[0] += (int32_t)(getEffectForce(effect,m_gains[0], m_effect_params[0], angle, 0));
-                angle = (directionY * 360.0 / 255.0) * DEG_TO_RAD;
-                forces[1] += (int32_t)(getEffectForce(effect, m_gains[1], m_effect_params[1], angle, 1));
-            }
-            else
-            {
-                if (effect.enableAxis & X_AXIS_ENABLE)
-                {
-                    float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
-                    forces[0] += (int32_t)(getEffectForce(effect, m_gains[0], m_effect_params[0], angle, 0));
-                }
-                if (effect.enableAxis & Y_AXIS_ENABLE)
-                {
-                    float angle = (directionY * 360.0 / 255.0) * DEG_TO_RAD;
-                    forces[1] += (int32_t)(getEffectForce(effect, m_gains[1], m_effect_params[1], angle, 1));
-                }
-            }
-
-        }
-    }
+	    	}
+	    }
 	forces[0] = (int32_t)((float)1.00 * forces[0] * m_gains[0].totalGain / 10000); // each effect gain * total effect gain = 10000
 	forces[1] = (int32_t)((float)1.00 * forces[1] * m_gains[1].totalGain / 10000); // each effect gain * total effect gain = 10000
 	forces[0] = constrain(forces[0], -255, 255);
@@ -702,12 +703,12 @@ int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect)
 
 int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis)
 {
-	float deadBand;
-	float cpOffset;
-	float negativeCoefficient;
-	float negativeSaturation;
-	float positiveSaturation;
-	float positiveCoefficient;
+    float deadBand;
+    float cpOffset;
+    float negativeCoefficient;
+    float negativeSaturation;
+    float positiveSaturation;
+    float positiveCoefficient;
 
     if (axis == 0) {
         deadBand = effect.deadBand;
@@ -725,27 +726,29 @@ int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float
         positiveCoefficient = effect.positiveCoefficientY;
     }
 
-	float  tempForce = 0;
+    float  tempForce = 0;
+
 	if (metric < (cpOffset - deadBand)) {
 		//    float tempForce = (metric - (float)1.00*(cpOffset - deadBand)/10000) * negativeCoefficient;
 		tempForce = ((float)1.00 * (cpOffset - deadBand) / 10000 - metric) * negativeCoefficient;
 		//    tempForce = (tempForce < negativeSaturation ? negativeSaturation : tempForce); I dont know why negativeSaturation = 55536.00 after negativeSaturation = -effect.negativeSaturation;
-		tempForce = (tempForce < (-negativeCoefficient) ? (-negativeCoefficient) : tempForce);
+		tempForce = (tempForce < (-effect.negativeCoefficient) ? (-effect.negativeCoefficient) : tempForce);
 	}
 	else if (metric > (cpOffset + deadBand)) {
 		tempForce = (metric - (float)1.00 * (cpOffset + deadBand) / 10000) * positiveCoefficient;
 		tempForce = (tempForce > positiveSaturation ? positiveSaturation : tempForce);
 	}
+	else return 0;
 	tempForce = tempForce * effect.gain / 255;
 	switch (effect.effectType) {
 	case  USB_EFFECT_DAMPER:
-		// tempForce = damperFilter.filterIn(tempForce);
+		//tempForce = damperFilter.filterIn(tempForce);
 		break;
 	case USB_EFFECT_INERTIA:
-		// tempForce = interiaFilter.filterIn(tempForce);
+		//tempForce = interiaFilter.filterIn(tempForce);
 		break;
 	case USB_EFFECT_FRICTION:
-		// tempForce = frictionFilter.filterIn(tempForce);
+		//tempForce = frictionFilter.filterIn(tempForce);
 		break;
 	default:
 		break;
