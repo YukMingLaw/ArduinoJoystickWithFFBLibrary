@@ -28,6 +28,7 @@
 #define _PIDREPORTTYPE_H
 
 #define MAX_EFFECTS 14
+#define FFB_AXIS_COUNT 2
 #define SIZE_EFFECT sizeof(TEffectState)
 #define MEMORY_SIZE (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 #define TO_LT_END_16(x) ((x<<8)&0xFF00)|((x>>8)&0x00FF)
@@ -232,7 +233,7 @@ typedef struct {
 	uint8_t directionX; // angle (0=0 .. 255=360deg)
 	uint8_t directionY; // angle (0=0 .. 255=360deg)
 
-	TEffectCondition conditions[2];
+	TEffectCondition conditions[FFB_AXIS_COUNT];
 
 	uint16_t phase;  // 0..255 (=0..359, exp-2)
 	int16_t startMagnitude;
