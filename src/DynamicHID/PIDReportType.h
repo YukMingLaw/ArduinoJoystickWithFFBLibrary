@@ -213,6 +213,15 @@ typedef struct// FFB: PID Pool Feature Report
 #define FRICTION_DEADBAND			0x30
 
 typedef struct {
+	int16_t cpOffset; // -128..127
+	int16_t  positiveCoefficient; // -128..127
+	int16_t  negativeCoefficient; // -128..127
+	uint16_t positiveSaturation;  // -128..127
+	uint16_t negativeSaturation;  // -128..127
+	uint16_t deadBand;  // 0..255
+} TEffectCondition;
+
+typedef struct {
 	volatile uint8_t state;  // see constants <MEffectState_*>
 	uint8_t effectType; //
 	int16_t offset;
@@ -223,19 +232,7 @@ typedef struct {
 	uint8_t directionX; // angle (0=0 .. 255=360deg)
 	uint8_t directionY; // angle (0=0 .. 255=360deg)
 
-	int16_t cpOffset; // -128..127
-	int16_t  positiveCoefficient; // -128..127
-	int16_t  negativeCoefficient; // -128..127
-	uint16_t positiveSaturation;  // -128..127
-	uint16_t negativeSaturation;  // -128..127
-	uint16_t deadBand;  // 0..255
-
-	int16_t cpOffsetY; // -128..127
-	int16_t  positiveCoefficientY; // -128..127
-	int16_t  negativeCoefficientY; // -128..127
-	uint16_t positiveSaturationY;  // -128..127
-	uint16_t negativeSaturationY;  // -128..127
-	uint16_t deadBandY;  // 0..255
+	TEffectCondition conditions[2];
 
 	uint16_t phase;  // 0..255 (=0..359, exp-2)
 	int16_t startMagnitude;

@@ -710,36 +710,27 @@ int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float
     float positiveSaturation;
     float positiveCoefficient;
 
-    if (axis == 0) {
-        deadBand = effect.deadBand;
-        cpOffset = effect.cpOffset;
-        negativeCoefficient = -effect.negativeCoefficient;
-        negativeSaturation = -effect.negativeSaturation;
-        positiveSaturation = effect.positiveSaturation;
-        positiveCoefficient = effect.positiveCoefficient;
-    } else {
-        deadBand = effect.deadBandY;
-        cpOffset = effect.cpOffsetY;
-        negativeCoefficient = -effect.negativeCoefficientY;
-        negativeSaturation = -effect.negativeSaturationY;
-        positiveSaturation = effect.positiveSaturationY;
-        positiveCoefficient = effect.positiveCoefficientY;
-    }
+    deadBand = effect.conditions[axis].deadBand;
+    cpOffset = effect.conditions[axis].cpOffset;
+    negativeCoefficient = effect.conditions[axis].negativeCoefficient;
+    negativeSaturation = effect.conditions[axis].negativeSaturation;
+    positiveSaturation = effect.conditions[axis].positiveSaturation;
+    positiveCoefficient = effect.conditions[axis].positiveCoefficient;
 
     float  tempForce = 0;
 
 	if (metric < (cpOffset - deadBand)) {
-		//    float tempForce = (metric - (float)1.00*(cpOffset - deadBand)/10000) * negativeCoefficient;
-		tempForce = ((float)1.00 * (cpOffset - deadBand) / 10000 - metric) * negativeCoefficient;
-		//    tempForce = (tempForce < negativeSaturation ? negativeSaturation : tempForce); I dont know why negativeSaturation = 55536.00 after negativeSaturation = -effect.negativeSaturation;
-		tempForce = (tempForce < (-effect.negativeCoefficient) ? (-effect.negativeCoefficient) : tempForce);
+		tempForce = (metric - (float)1.00*(cpOffset - deadBand)/10000) * negativeCoefficient;
+		// tempForce = ((float)1.00 * (cpOffset - deadBand) / 10000 - metric) * negativeCoefficient;
+		   tempForce = (tempForce < -negativeSaturation ? -negativeSaturation : tempForce); // I dont know why negativeSaturation = 55536.00 after negativeSaturation = -effect.negativeSaturation;
+		// tempForce = (tempForce < (-effect.negativeCoefficient) ? (-effect.negativeCoefficient) : tempForce);
 	}
 	else if (metric > (cpOffset + deadBand)) {
 		tempForce = (metric - (float)1.00 * (cpOffset + deadBand) / 10000) * positiveCoefficient;
 		tempForce = (tempForce > positiveSaturation ? positiveSaturation : tempForce);
 	}
 	else return 0;
-	tempForce = tempForce * effect.gain / 255;
+	tempForce = -tempForce * effect.gain / 255;
 	switch (effect.effectType) {
 	case  USB_EFFECT_DAMPER:
 		//tempForce = damperFilter.filterIn(tempForce);
