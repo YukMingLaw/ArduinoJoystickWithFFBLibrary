@@ -490,47 +490,64 @@ void Joystick_::getForce(int32_t* forces) {
 	forceCalculator(forces);
 }
 
-int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,EffectParams _effect_params){
+int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,EffectParams _effect_params, uint8_t axis){
+
+    uint8_t direction;
+    uint8_t condition;
+    if (effect.enableAxis == DIRECTION_ENABLE)
+    {
+        direction = effect.directionX;
+        condition = 0; // If the Direction Enable flag is set, only one Condition Parameter Block is defined
+    }
+    else
+    {
+        direction = axis == 0 ? effect.directionX : effect.directionY;
+        condition = axis;
+    }
+
+    float angle = (direction * 360.0 / 255.0) * DEG_TO_RAD;
+    float angle_ratio = axis == 0 ? sin(angle) : -1 * cos(angle);
+
 	int32_t force = 0;
 	switch (effect.effectType)
     {
 	    case USB_EFFECT_CONSTANT://1
-	        force = ConstantForceCalculator(effect) * _gains.constantGain;
+	        force = ConstantForceCalculator(effect) * _gains.constantGain * angle_ratio;
 	        break;
 	    case USB_EFFECT_RAMP://2
-	    	force = RampForceCalculator(effect) * _gains.rampGain;
+	    	force = RampForceCalculator(effect) * _gains.rampGain * angle_ratio;
 	    	break;
 	    case USB_EFFECT_SQUARE://3
-	    	force = SquareForceCalculator(effect) * _gains.squareGain;
+	    	force = SquareForceCalculator(effect) * _gains.squareGain * angle_ratio;
 	    	break;
 	    case USB_EFFECT_SINE://4
-	    	force = SinForceCalculator(effect) * _gains.sineGain;
+	    	force = SinForceCalculator(effect) * _gains.sineGain * angle_ratio;
 	    	break;
 	    case USB_EFFECT_TRIANGLE://5
-	    	force = TriangleForceCalculator(effect) * _gains.triangleGain;
+	    	force = TriangleForceCalculator(effect) * _gains.triangleGain * angle_ratio;
 	    	break;
 	    case USB_EFFECT_SAWTOOTHDOWN://6
-	    	force = SawtoothDownForceCalculator(effect) * _gains.sawtoothdownGain;
+	    	force = SawtoothDownForceCalculator(effect) * _gains.sawtoothdownGain * angle_ratio;
 	    	break;
 	    case USB_EFFECT_SAWTOOTHUP://7
-	    	force = SawtoothUpForceCalculator(effect) * _gains.sawtoothupGain;
+	    	force = SawtoothUpForceCalculator(effect) * _gains.sawtoothupGain * angle_ratio;
 	    	break;
 	    case USB_EFFECT_SPRING://8
-	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.springPosition, _effect_params.springMaxPosition)) * _gains.springGain;
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.springPosition, _effect_params.springMaxPosition), condition) * _gains.springGain;
 	    	break;
 	    case USB_EFFECT_DAMPER://9
-	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, _effect_params.damperMaxVelocity)) * _gains.damperGain;
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, _effect_params.damperMaxVelocity), condition) * _gains.damperGain;
 	    	break;
 	    case USB_EFFECT_INERTIA://10
 	    	if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange < 0) {
-	    		force = ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration))) * _gains.inertiaGain;
+	    		force = ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration)), condition) * _gains.inertiaGain;
 	    	}
 	    	else if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange > 0) {
-	    		force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration))) * _gains.inertiaGain;
+	    		force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration)), condition) * _gains.inertiaGain;
 	    	}
 	    	break;
 	    case USB_EFFECT_FRICTION://11
-	    		force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange)) * _gains.frictionGain;
+	    		force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), condition) * _gains.frictionGain;
 	    		break;
 	    case USB_EFFECT_CUSTOM://12
 	    		break;
@@ -551,27 +568,15 @@ void Joystick_::forceCalculator(int32_t* forces) {
 	    		(effect.duration == USB_DURATION_INFINITE)) &&
 	    		!DynamicHID().pidReportHandler.devicePaused)
 	    	{
-				float directionX = effect.directionX;
-				float directionY = effect.directionY;
-
-				if (effect.enableAxis == DIRECTION_ENABLE)
+				if (effect.enableAxis == DIRECTION_ENABLE
+                    || effect.enableAxis & X_AXIS_ENABLE)
 				{
-					float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
-					forces[0] += (int32_t)(sin(angle) * getEffectForce(effect,m_gains[0], m_effect_params[0]));
-					forces[1] += (int32_t)(-1 * cos(angle) * getEffectForce(effect, m_gains[1], m_effect_params[1]));
+					forces[0] += (int32_t)(getEffectForce(effect,m_gains[0], m_effect_params[0], 0));
 				}
-				else
+				if (effect.enableAxis == DIRECTION_ENABLE
+                    || effect.enableAxis & Y_AXIS_ENABLE)
 				{
-					if (effect.enableAxis & X_AXIS_ENABLE)
-					{
-						float angle = (directionX * 360.0 / 255.0) * DEG_TO_RAD;
-						forces[0] += (int32_t)(sin(angle) * getEffectForce(effect, m_gains[0], m_effect_params[0]));
-					}
-					if (effect.enableAxis & Y_AXIS_ENABLE)
-					{
-						float angle = (directionY * 360.0 / 255.0) * DEG_TO_RAD;
-						forces[1] += (int32_t)(-1 * cos(angle) * getEffectForce(effect, m_gains[1], m_effect_params[1]));
-					}
+					forces[1] += (int32_t)(getEffectForce(effect,m_gains[1], m_effect_params[1], 1));
 				}
 
 	    	}
@@ -693,27 +698,36 @@ int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect)
 	return ApplyEnvelope(effect, tempforce);
 }
 
-int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float metric)
+int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis)
 {
-	float deadBand = effect.deadBand;
-	float cpOffset = effect.cpOffset;
-	float negativeCoefficient = -effect.negativeCoefficient;
-	float negativeSaturation = -effect.negativeSaturation;
-	float positiveSaturation = effect.positiveSaturation;
-	float positiveCoefficient = effect.positiveCoefficient;
-	float  tempForce = 0;
+    float deadBand;
+    float cpOffset;
+    float negativeCoefficient;
+    float negativeSaturation;
+    float positiveSaturation;
+    float positiveCoefficient;
+
+    deadBand = effect.conditions[axis].deadBand;
+    cpOffset = effect.conditions[axis].cpOffset;
+    negativeCoefficient = effect.conditions[axis].negativeCoefficient;
+    negativeSaturation = effect.conditions[axis].negativeSaturation;
+    positiveSaturation = effect.conditions[axis].positiveSaturation;
+    positiveCoefficient = effect.conditions[axis].positiveCoefficient;
+
+    float  tempForce = 0;
+
 	if (metric < (cpOffset - deadBand)) {
-		//    float tempForce = (metric - (float)1.00*(cpOffset - deadBand)/10000) * negativeCoefficient;
-		tempForce = ((float)1.00 * (cpOffset - deadBand) / 10000 - metric) * negativeCoefficient;
-		//    tempForce = (tempForce < negativeSaturation ? negativeSaturation : tempForce); I dont know why negativeSaturation = 55536.00 after negativeSaturation = -effect.negativeSaturation;
-		tempForce = (tempForce < (-effect.negativeCoefficient) ? (-effect.negativeCoefficient) : tempForce);
+		tempForce = (metric - (float)1.00*(cpOffset - deadBand)/10000) * negativeCoefficient;
+		// tempForce = ((float)1.00 * (cpOffset - deadBand) / 10000 - metric) * negativeCoefficient;
+		   tempForce = (tempForce < -negativeSaturation ? -negativeSaturation : tempForce); // I dont know why negativeSaturation = 55536.00 after negativeSaturation = -effect.negativeSaturation;
+		// tempForce = (tempForce < (-effect.negativeCoefficient) ? (-effect.negativeCoefficient) : tempForce);
 	}
 	else if (metric > (cpOffset + deadBand)) {
 		tempForce = (metric - (float)1.00 * (cpOffset + deadBand) / 10000) * positiveCoefficient;
 		tempForce = (tempForce > positiveSaturation ? positiveSaturation : tempForce);
 	}
 	else return 0;
-	tempForce = tempForce * effect.gain / 255;
+	tempForce = -tempForce * effect.gain / 255;
 	switch (effect.effectType) {
 	case  USB_EFFECT_DAMPER:
 		//tempForce = damperFilter.filterIn(tempForce);
