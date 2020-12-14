@@ -29,7 +29,7 @@
 #define USB_Send USBD_Send
 #define USB_Recv USBD_Recv
 #define USB_RecvControl USBD_RecvControl
-//#define USB_Available USBD_Available
+#define USB_Available USBD_Available
 #endif
 
 DynamicHID_& DynamicHID()
@@ -257,7 +257,7 @@ int DynamicHID_::begin(void)
 }
 
 bool DynamicHID_::usb_Available() {
-	return USBD_Available(PID_ENDPOINT_OUT);
+	return USB_Available(PID_ENDPOINT_OUT);
 }
 
 #endif /* if defined(USBCON) */
