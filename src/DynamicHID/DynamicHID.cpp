@@ -242,6 +242,7 @@ bool DynamicHID_::setup(USBSetup& setup)
 	return false;
 }
 
+#ifdef _VARIANT_ARDUINO_DUE_X_
 DynamicHID_::DynamicHID_(void) : PluggableUSBModule(PID_ENPOINT_COUNT, 1, (uint32_t *)epType),
                    rootNode(NULL), descriptorSize(0),
                    protocol(DYNAMIC_HID_REPORT_PROTOCOL), idle(1)
@@ -250,6 +251,17 @@ DynamicHID_::DynamicHID_(void) : PluggableUSBModule(PID_ENPOINT_COUNT, 1, (uint3
 	epType[1] = EP_TYPE_INTERRUPT_OUT;
 	PluggableUSB().plug(this);
 }
+#else
+DynamicHID_::DynamicHID_(void) : PluggableUSBModule(PID_ENPOINT_COUNT, 1, epType),
+                   rootNode(NULL), descriptorSize(0),
+                   protocol(DYNAMIC_HID_REPORT_PROTOCOL), idle(1)
+{
+	epType[0] = EP_TYPE_INTERRUPT_IN;
+	epType[1] = EP_TYPE_INTERRUPT_OUT;
+	PluggableUSB().plug(this);
+}
+
+#endif
 
 int DynamicHID_::begin(void)
 {
