@@ -194,6 +194,7 @@ bool DynamicHID_::SetReport(USBSetup& setup) {
 		  return true;
 		  }*/
 	}
+	return (false);
 }
 
 bool DynamicHID_::setup(USBSetup& setup)

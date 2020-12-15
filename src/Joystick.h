@@ -58,9 +58,15 @@
 #define DIRECTION_ENABLE                   0x04
 #define X_AXIS_ENABLE                      0x01
 #define Y_AXIS_ENABLE                      0x02
+
+#ifndef FFB_AXIS_COUNT
 #define FFB_AXIS_COUNT                     0x02
+#endif
+
 #define FORCE_FEEDBACK_MAXGAIN              100
+#ifndef DEG_TO_RAD
 #define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
+#endif
 
 struct Gains{
     uint8_t totalGain         = FORCE_FEEDBACK_MAXGAIN;

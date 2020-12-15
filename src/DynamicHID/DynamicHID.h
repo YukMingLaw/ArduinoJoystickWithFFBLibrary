@@ -107,8 +107,8 @@ public:
   DynamicHIDSubDescriptor(const void *d, const uint16_t l, const void* pid_d, const uint16_t pid_l, const bool ipm = true) : data(d), length(l),pid_data(pid_d), pid_length(pid_l), inProgMem(ipm) { }
 
   const void* data;
-  const void* pid_data;
   const uint16_t length;
+  const void* pid_data;
   const uint16_t pid_length;
   const bool inProgMem;
 };
