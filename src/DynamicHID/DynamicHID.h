@@ -135,7 +135,11 @@ protected:
   uint8_t getShortName(char* name);
 
 private:
-  uint8_t epType[2];
+  #ifdef _VARIANT_ARDUINO_DUE_X_
+      uint32_t epType[2];
+  #else
+      uint8_t epType[2];
+  #endif
 
   DynamicHIDSubDescriptor* rootNode;
   uint16_t descriptorSize;
