@@ -115,7 +115,7 @@ int DynamicHID_::RecvData(byte* data)
 {
 	int count = 0;
 	while (usb_Available()) {
-		data[count++] = (byte)USB_Recv(PID_ENDPOINT_OUT);
+		data[count++] = USB_Recv(PID_ENDPOINT_OUT);
 	}
 	return count;
 }
