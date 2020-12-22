@@ -107,8 +107,8 @@ public:
   DynamicHIDSubDescriptor(const void *d, const uint16_t l, const void* pid_d, const uint16_t pid_l, const bool ipm = true) : data(d), length(l),pid_data(pid_d), pid_length(pid_l), inProgMem(ipm) { }
 
   const void* data;
-  const void* pid_data;
   const uint16_t length;
+  const void* pid_data;
   const uint16_t pid_length;
   const bool inProgMem;
 };
@@ -135,7 +135,11 @@ protected:
   uint8_t getShortName(char* name);
 
 private:
-  uint8_t epType[2];
+  #ifdef _VARIANT_ARDUINO_DUE_X_
+      uint32_t epType[2];
+  #else
+      uint8_t epType[2];
+  #endif
 
   DynamicHIDSubDescriptor* rootNode;
   uint16_t descriptorSize;

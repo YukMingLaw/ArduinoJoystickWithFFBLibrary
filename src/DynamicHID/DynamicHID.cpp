@@ -20,12 +20,16 @@
  */
 
 #include "DynamicHID.h"
+#include "Arduino.h"
 
 #if defined(USBCON)
 
 #ifdef _VARIANT_ARDUINO_DUE_X_
 #define USB_SendControl USBD_SendControl
 #define USB_Send USBD_Send
+#define USB_Recv USBD_Recv
+#define USB_RecvControl USBD_RecvControl
+#define USB_Available USBD_Available
 #endif
 
 DynamicHID_& DynamicHID()
@@ -111,7 +115,7 @@ int DynamicHID_::RecvData(byte* data)
 {
 	int count = 0;
 	while (usb_Available()) {
-		data[count++] = (byte)USB_Recv(PID_ENDPOINT_OUT);
+		data[count++] = USB_Recv(PID_ENDPOINT_OUT);
 	}
 	return count;
 }
@@ -141,7 +145,8 @@ bool DynamicHID_::GetReport(USBSetup& setup) {
 	if (report_type == DYNAMIC_HID_REPORT_TYPE_FEATURE) {
 		if ((report_id == 6))// && (gNewEffectBlockLoad.reportId==6))
 		{
-			_delay_us(500);
+			//_delay_us(500);
+			delayMicroseconds(500);
 			USB_SendControl(TRANSFER_RELEASE, pidReportHandler.getPIDBlockLoad(), sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
 			pidReportHandler.pidBlockLoad.reportId = 0;
 			return (true);
@@ -189,6 +194,7 @@ bool DynamicHID_::SetReport(USBSetup& setup) {
 		  return true;
 		  }*/
 	}
+	return (false);
 }
 
 bool DynamicHID_::setup(USBSetup& setup)
@@ -237,6 +243,7 @@ bool DynamicHID_::setup(USBSetup& setup)
 	return false;
 }
 
+
 DynamicHID_::DynamicHID_(void) : PluggableUSBModule(PID_ENPOINT_COUNT, 1, epType),
                    rootNode(NULL), descriptorSize(0),
                    protocol(DYNAMIC_HID_REPORT_PROTOCOL), idle(1)
@@ -245,6 +252,7 @@ DynamicHID_::DynamicHID_(void) : PluggableUSBModule(PID_ENPOINT_COUNT, 1, epType
 	epType[1] = EP_TYPE_INTERRUPT_OUT;
 	PluggableUSB().plug(this);
 }
+
 
 int DynamicHID_::begin(void)
 {

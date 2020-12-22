@@ -560,7 +560,7 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,Eff
 void Joystick_::forceCalculator(int32_t* forces) {
     forces[0] = 0;
     forces[1] = 0;
-        int32_t force = 0;
+        //int32_t force = 0;
 	    for (int id = 0; id < MAX_EFFECTS; id++) {
 	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
 	    	if ((effect.state == MEFFECTSTATE_PLAYING) &&
