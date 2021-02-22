@@ -28,6 +28,7 @@
 #define _PIDREPORTTYPE_H
 
 #define MAX_EFFECTS 14
+#define FFB_AXIS_COUNT 2
 #define SIZE_EFFECT sizeof(TEffectState)
 #define MEMORY_SIZE (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 #define TO_LT_END_16(x) ((x<<8)&0xFF00)|((x>>8)&0x00FF)
@@ -59,7 +60,7 @@ typedef struct //FFB: Set Effect Output Report
 	uint8_t	enableAxis; // bits: 0=X, 1=Y, 2=DirectionEnable
 	uint8_t	directionX;	// angle (0=0 .. 255=360deg)
 	uint8_t	directionY;	// angle (0=0 .. 255=360deg)
-	//	uint16_t	startDelay;	// 0..32767 ms
+    uint16_t startDelay;    // 0..32767 ms
 } USB_FFBReport_SetEffect_Output_Data_t;
 
 typedef struct//FFB: Set Envelope Output Report
@@ -232,13 +233,14 @@ typedef struct {
 	uint8_t directionX; // angle (0=0 .. 255=360deg)
 	uint8_t directionY; // angle (0=0 .. 255=360deg)
 
-	TEffectCondition conditions[2];
+	TEffectCondition conditions[FFB_AXIS_COUNT];
 
 	uint16_t phase;  // 0..255 (=0..359, exp-2)
 	int16_t startMagnitude;
 	int16_t  endMagnitude;
 	uint16_t  period; // 0..32767 ms
-	uint16_t duration, fadeTime, attackTime, elapsedTime;
+	uint16_t duration, fadeTime, attackTime, elapsedTime, totalDuration;
 	uint64_t startTime;
+    uint64_t startDelay;    // 0..32767 ms
 } TEffectState;
 #endif

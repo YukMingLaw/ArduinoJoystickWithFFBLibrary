@@ -1,0 +1,6 @@
+{
+  "*": {
+    "make": "arduino-cli.exe compile --fqbn arduino:avr:micro --verbose brunnerdx",
+    "dispatch": "arduino-cli.exe upload --fqbn arduino:avr:micro --verbose brunnerdx -p $(arduino-cli.exe board list | grep Micro | cut -d' ' -f1)",
+  }
+}

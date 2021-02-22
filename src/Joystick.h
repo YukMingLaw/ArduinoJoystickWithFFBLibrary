@@ -21,7 +21,7 @@
 #ifndef JOYSTICK_h
 #define JOYSTICK_h
 
-#include <DynamicHID/DynamicHID.h>
+#include "DynamicHID/DynamicHID.h"
 
 #if ARDUINO < 10606
 #error The Joystick library requires Arduino IDE 1.6.6 or greater. Please update your IDE.
@@ -105,9 +105,6 @@ private:
 	int16_t	                 _zAxisRotation;
 	int16_t                  _throttle;
 	int16_t                  _rudder;
-	int16_t					 _accelerator;
-	int16_t					 _brake;
-	int16_t					 _steering;
 	int16_t	                 _hatSwitchValues[JOYSTICK_HATSWITCH_COUNT_MAXIMUM];
     uint8_t                 *_buttonValues = NULL;
 
@@ -134,18 +131,9 @@ private:
 	int16_t                  _rudderMaximum = JOYSTICK_DEFAULT_SIMULATOR_MAXIMUM;
 	int16_t                  _throttleMinimum = JOYSTICK_DEFAULT_SIMULATOR_MINIMUM;
 	int16_t                  _throttleMaximum = JOYSTICK_DEFAULT_SIMULATOR_MAXIMUM;
-	int16_t                  _acceleratorMinimum = JOYSTICK_DEFAULT_SIMULATOR_MINIMUM;
-	int16_t                  _acceleratorMaximum = JOYSTICK_DEFAULT_SIMULATOR_MAXIMUM;
-	int16_t                  _brakeMinimum = JOYSTICK_DEFAULT_SIMULATOR_MINIMUM;
-	int16_t                  _brakeMaximum = JOYSTICK_DEFAULT_SIMULATOR_MAXIMUM;
-	int16_t                  _steeringMinimum = JOYSTICK_DEFAULT_SIMULATOR_MINIMUM;
-	int16_t                  _steeringMaximum = JOYSTICK_DEFAULT_SIMULATOR_MAXIMUM;
 
 	uint8_t                  _hidReportId;
 	uint8_t                  _hidReportSize; 
-
-	//force feedback gain
-	Gains* m_gains;
 
 	//force feedback effect params
 	EffectParams* m_effect_params;
@@ -153,7 +141,7 @@ private:
 	///force calculate funtion
 	float NormalizeRange(int32_t x, int32_t maxValue);
 	int32_t ApplyEnvelope(volatile TEffectState& effect, int32_t value);
-	int32_t ApplyGain(uint8_t value, uint8_t gain);
+	int32_t ApplyGain(uint16_t value, uint8_t gain);
 	int32_t ConstantForceCalculator(volatile TEffectState& effect);
 	int32_t RampForceCalculator(volatile TEffectState& effect);
 	int32_t SquareForceCalculator(volatile TEffectState& effect);
@@ -163,7 +151,7 @@ private:
 	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
 	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis);
 	void forceCalculator(int32_t* forces);
-	int32_t getEffectForce(volatile TEffectState& effect, Gains _gains, EffectParams _effect_params, uint8_t axis);
+	int32_t getEffectForce(volatile TEffectState& effect, EffectParams _effect_params, uint8_t axis);
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);
 	int buildAndSetAxisValue(bool includeAxis, int16_t axisValue, int16_t axisMinimum, int16_t axisMaximum, uint8_t dataLocation[]);
@@ -182,10 +170,7 @@ public:
 		bool includeRyAxis = true,
 		bool includeRzAxis = true,
 		bool includeRudder = true,
-		bool includeThrottle = true,
-		bool includeAccelerator = true,
-		bool includeBrake = true,
-		bool includeSteering = true);
+		bool includeThrottle = true);
 
 	void begin(bool initAutoSendState = true);
 	void end();
@@ -231,21 +216,6 @@ public:
 		_throttleMinimum = minimum;
 		_throttleMaximum = maximum;
 	}
-	inline void setAcceleratorRange(int16_t minimum, int16_t maximum)
-	{
-		_acceleratorMinimum = minimum;
-		_acceleratorMaximum = maximum;
-	}
-	inline void setBrakeRange(int16_t minimum, int16_t maximum)
-	{
-		_brakeMinimum = minimum;
-		_brakeMaximum = maximum;
-	}
-	inline void setSteeringRange(int16_t minimum, int16_t maximum)
-	{
-		_steeringMinimum = minimum;
-		_steeringMaximum = maximum;
-	}
 
 	// Set Axis Values
 	void setXAxis(int16_t value);
@@ -258,9 +228,6 @@ public:
 	// Set Simuation Values
 	void setRudder(int16_t value);
 	void setThrottle(int16_t value);
-	void setAccelerator(int16_t value);
-	void setBrake(int16_t value);
-	void setSteering(int16_t value);
 
 	void setButton(uint8_t button, uint8_t value);
 	void pressButton(uint8_t button);
@@ -271,15 +238,6 @@ public:
 
 	//force feedback Interfaces
 	void getForce(int32_t* forces);
-	//set gain functions
-	int8_t setGains(Gains* _gains){
-	    if(_gains != nullptr){
-			//it should be added some limition here,but im so tired,it's 2:24 A.M now!
-	        m_gains = _gains;
-	        return 0;
-	    }
-	    return -1;
-	};
 	//set effect params funtions
 	int8_t setEffectParams(EffectParams* _effect_params){
 	    if(_effect_params != nullptr){

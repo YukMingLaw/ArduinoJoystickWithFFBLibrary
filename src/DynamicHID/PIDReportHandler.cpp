@@ -73,8 +73,8 @@ void PIDReportHandler::EffectOperation(USB_FFBReport_EffectOperation_Output_Data
 {
 	if (data->operation == 1)
 	{ // Start
-		if (data->loopCount > 0) g_EffectStates[data->effectBlockIndex].duration *= data->loopCount;
-		if (data->loopCount == 0xFF) g_EffectStates[data->effectBlockIndex].duration = USB_DURATION_INFINITE;
+		if (data->loopCount > 0) g_EffectStates[data->effectBlockIndex].totalDuration *= data->loopCount;
+		if (data->loopCount == 0xFF) g_EffectStates[data->effectBlockIndex].totalDuration = USB_DURATION_INFINITE;
 		StartEffect(data->effectBlockIndex);
 	}
 	else if (data->operation == 2)
@@ -169,6 +169,8 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 	effect->effectType = data->effectType;
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
+    effect->startDelay = data->startDelay;
+	effect->totalDuration = data->duration + data->startDelay;
 	//Serial.print("dX: ");
 	//Serial.print(effect->directionX);
 	//Serial.print(" dX: ");
