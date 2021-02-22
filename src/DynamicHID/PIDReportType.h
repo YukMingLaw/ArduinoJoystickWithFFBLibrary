@@ -239,8 +239,7 @@ typedef struct {
 	int16_t startMagnitude;
 	int16_t  endMagnitude;
 	uint16_t  period; // 0..32767 ms
-	uint16_t duration, fadeTime, attackTime, elapsedTime, totalDuration;
+	uint16_t duration, fadeTime, attackTime, elapsedTime, totalDuration, startDelay;
 	uint64_t startTime;
-    uint64_t startDelay;    // 0..32767 ms
 } TEffectState;
 #endif

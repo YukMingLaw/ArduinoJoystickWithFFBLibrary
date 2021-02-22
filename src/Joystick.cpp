@@ -532,16 +532,6 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    		break;
 	    }
 
-	    effect.elapsedTime = (uint64_t)millis() - effect.startTime;
-
-        if ((effect.totalDuration = USB_DURATION_INFINITE) ||
-            (effect.elapsedTime > effect.totalDuration))
-        {
-            effect.elapsedTime = effect.elapsedTime % (effect.duration + effect.startDelay);
-        } else {
-            effect.elapsedTime = effect.totalDuration - effect.elapsedTime + effect.duration + effect.startDelay;
-        }
-
 		return force;
 }
 
@@ -553,21 +543,33 @@ void Joystick_::forceCalculator(int32_t* forces) {
 	    for (int id = 0; id < MAX_EFFECTS; id++) {
 	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
 	    	if ((effect.state == MEFFECTSTATE_PLAYING) &&
-	    	    (effect.elapsedTime - effect.startDelay <= effect.duration) &&
+	    	    (effect.elapsedTime <= effect.duration) &&
 	    		!DynamicHID().pidReportHandler.devicePaused)
-	    	{
-				if (effect.enableAxis == DIRECTION_ENABLE
-                    || effect.enableAxis & X_AXIS_ENABLE)
+            {
+                // dont calculate effects that havent reached their startDelay
+	    	    if (effect.elapsedTime >= effect.startDelay)
 				{
-					forces[0] += (int32_t)(getEffectForce(effect, m_effect_params[0], 0));
-				}
-				if (effect.enableAxis == DIRECTION_ENABLE
-                    || effect.enableAxis & Y_AXIS_ENABLE)
-				{
-					forces[1] += (int32_t)(getEffectForce(effect, m_effect_params[1], 1));
+					if (effect.enableAxis == DIRECTION_ENABLE
+						|| effect.enableAxis & X_AXIS_ENABLE)
+					{
+						forces[0] += (int32_t)(getEffectForce(effect, m_effect_params[0], 0));
+					}
+					if (effect.enableAxis == DIRECTION_ENABLE
+						|| effect.enableAxis & Y_AXIS_ENABLE)
+					{
+						forces[1] += (int32_t)(getEffectForce(effect, m_effect_params[1], 1));
+					}
 				}
 
-	    	}
+				effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+				if ((effect.totalDuration = USB_DURATION_INFINITE) ||
+					(effect.elapsedTime < effect.totalDuration))
+				{
+					effect.elapsedTime = effect.elapsedTime % effect.duration;
+				} else {
+					effect.elapsedTime = effect.totalDuration - effect.elapsedTime + effect.duration;
+				}
+            }
 	    }
 	forces[0] = (int32_t)((float)totalGain * forces[0]); // each effect gain * total effect gain = 10000
 	forces[1] = (int32_t)((float)totalGain * forces[1]); // each effect gain * total effect gain = 10000

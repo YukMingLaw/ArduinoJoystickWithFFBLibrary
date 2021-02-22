@@ -163,14 +163,16 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 {
 	volatile TEffectState* effect = &g_EffectStates[data->effectBlockIndex];
 
-	effect->duration = data->duration;
+	effect->duration = data->duration + data->startDelay;
 	effect->directionX = data->directionX;
 	effect->directionY = data->directionY;
 	effect->effectType = data->effectType;
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
     effect->startDelay = data->startDelay;
-	effect->totalDuration = data->duration + data->startDelay;
+	effect->totalDuration = effect->duration;
+	//Serial.print("sD: ");
+	//Serial.println(effect->startDelay);
 	//Serial.print("dX: ");
 	//Serial.print(effect->directionX);
 	//Serial.print(" dX: ");
