@@ -562,11 +562,16 @@ void Joystick_::forceCalculator(int32_t* forces) {
 				}
 
 				effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+                // totalDuration counts all repetitions
+                // duration has the sum of effect duration + delay
 				if ((effect.totalDuration = USB_DURATION_INFINITE) ||
 					(effect.elapsedTime < effect.totalDuration))
 				{
+                    // if we are still running the effect
+                    // show where in the loop we are
 					effect.elapsedTime = effect.elapsedTime % effect.duration;
 				} else {
+                    // time from the last loop start
 					effect.elapsedTime = effect.totalDuration - effect.elapsedTime + effect.duration;
 				}
             }
