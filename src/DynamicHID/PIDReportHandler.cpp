@@ -170,7 +170,7 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
     effect->startDelay = data->startDelay;
-	effect->totalDuration = effect->duration;
+	effect->totalDuration = data->duration + data->startDelay;
 	//Serial.print("sD: ");
 	//Serial.println(effect->startDelay);
 	//Serial.print("dX: ");

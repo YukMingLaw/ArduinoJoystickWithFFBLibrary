@@ -484,7 +484,7 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
     if (axis == 0) {
         angle_ratio = -1 * sin(angle);
     } else {
-        angle_ratio = cos(angle);
+        angle_ratio = -1 * cos(angle);
     }
 
 	int32_t force = 0;
@@ -561,18 +561,15 @@ void Joystick_::forceCalculator(int32_t* forces) {
 					}
 				}
 
-				effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+				effect.elapsedTime = (uint64_t)millis() - effect.startTime + effect.startDelay;
                 // totalDuration counts all repetitions
                 // duration has the sum of effect duration + delay
-				if ((effect.totalDuration = USB_DURATION_INFINITE) ||
+				if ((effect.totalDuration == USB_DURATION_INFINITE) ||
 					(effect.elapsedTime < effect.totalDuration))
 				{
                     // if we are still running the effect
                     // show where in the loop we are
 					effect.elapsedTime = effect.elapsedTime % effect.duration;
-				} else {
-                    // time from the last loop start
-					effect.elapsedTime = effect.totalDuration - effect.elapsedTime + effect.duration;
 				}
             }
 	    }
