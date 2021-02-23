@@ -13,7 +13,6 @@ There are two different ways you can use this sketch:
 ## TODO:
 
 * Improve the filtering of conditional forces. I'm sure this can be made a bit smoother though it acts similar to the MS FFB2 at the moment.
-* Figure out how to make the USB device inform it has dwStartDelay capabilities. This will fix the issue with the Grooves effect vibrating constantly instead of every x seconds in the `TestForce.exe` app
 
 ## Ref
 
