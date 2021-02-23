@@ -494,10 +494,17 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,Eff
 
     uint8_t direction;
     uint8_t condition;
+
+	bool useForceDirectionForConditionEffect = (effect.enableAxis == DIRECTION_ENABLE && effect.conditionsCount == 1);
+
     if (effect.enableAxis == DIRECTION_ENABLE)
     {
         direction = effect.directionX;
-        condition = 0; // If the Direction Enable flag is set, only one Condition Parameter Block is defined
+		if (effect.conditionsCount > 1) {
+            condition = axis;
+        } else {
+	        condition = 0; // only one Condition Parameter Block is defined
+		}
     }
     else
     {
@@ -534,9 +541,15 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,Eff
 	    	break;
 	    case USB_EFFECT_SPRING://8
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.springPosition, _effect_params.springMaxPosition), condition) * _gains.springGain;
+			if (useForceDirectionForConditionEffect) {
+				force *= angle_ratio;
+			}
 	    	break;
 	    case USB_EFFECT_DAMPER://9
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, _effect_params.damperMaxVelocity), condition) * _gains.damperGain;
+			if (useForceDirectionForConditionEffect) {
+				force *= angle_ratio;
+			}
 	    	break;
 	    case USB_EFFECT_INERTIA://10
 	    	if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange < 0) {
@@ -545,9 +558,15 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect,Gains _gains,Eff
 	    	else if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange > 0) {
 	    		force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration)), condition) * _gains.inertiaGain;
 	    	}
+			if (useForceDirectionForConditionEffect) {
+				force *= angle_ratio;
+			}
 	    	break;
 	    case USB_EFFECT_FRICTION://11
-	    		force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), condition) * _gains.frictionGain;
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), condition) * _gains.frictionGain;
+			if (useForceDirectionForConditionEffect) {
+				force *= angle_ratio;
+			}
 	    		break;
 	    case USB_EFFECT_CUSTOM://12
 	    		break;

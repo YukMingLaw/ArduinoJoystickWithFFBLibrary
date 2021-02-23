@@ -199,6 +199,7 @@ void PIDReportHandler::SetCondition(USB_FFBReport_SetCondition_Output_Data_t* da
         effect->conditions[axis].positiveSaturation = data->positiveSaturation;
         effect->conditions[axis].negativeSaturation = data->negativeSaturation;
         effect->conditions[axis].deadBand = data->deadBand;
+		effect->conditionBlocksCount++;
 }
 
 void PIDReportHandler::SetPeriodic(USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState* effect)
