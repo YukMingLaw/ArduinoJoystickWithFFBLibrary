@@ -22,6 +22,7 @@ unsigned long nextEffectsMillis;
 
 bool is_connected = false;
 bool forces_requested = false;
+bool pos_updated = false;
 
 int16_t pos[2] = {0, 0};
 int lastX;
@@ -54,6 +55,7 @@ void setup() {
 }
 
 void loop(){
+    pos_updated = false;
     get_messages_from_serial();
 
     unsigned long currentMillis;
@@ -63,8 +65,8 @@ void loop(){
         updateJoystickPos();
         nextJoystickMillis = currentMillis + 2;
 
-        // we calculate condition forces every 100ms or more frequently if requested
-        if (currentMillis >= nextEffectsMillis || forces_requested) {
+        // we calculate condition forces every 100ms or more frequently if we get position updates
+        if (currentMillis >= nextEffectsMillis || pos_updated) {
             updateEffects(true);
             nextEffectsMillis = currentMillis + 100;
         } else {

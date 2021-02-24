@@ -39,6 +39,7 @@ void get_messages_from_serial()
           int16_t y = read_i16();
           pos[0] = x;
           pos[1] = y;
+          pos_updated = true;
           break;
         }
         case FORCES:
