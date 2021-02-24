@@ -1,6 +1,7 @@
-#define SKETCH_MAJOR_VERSION 2
-#define SKETCH_MINOR_VERSION 0
 #define DEBUGNO
+// the digits mean Mmmmrrr (M=Major,m=minor,r=revision)
+#define SKETCH_VERSION 2000001
+
 #include "src/Joystick.h"
 #include "config.h"
 #include "order.h"

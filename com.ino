@@ -50,8 +50,7 @@ void get_messages_from_serial()
         case VERSION:
         {
           write_order(VERSION);
-          int32_t version = SKETCH_MAJOR_VERSION * 1000 + SKETCH_MINOR_VERSION;
-          write_i32(version);
+          write_i32(SKETCH_VERSION);
           break;
         }
   			// Unknown order
