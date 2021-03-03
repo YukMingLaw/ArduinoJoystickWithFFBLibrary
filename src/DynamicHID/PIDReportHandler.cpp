@@ -71,10 +71,22 @@ void PIDReportHandler::FreeAllEffects(void)
 
 void PIDReportHandler::EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t* data)
 {
+    //Serial.print("lC");
+    //Serial.println(data->loopCount);
+    g_EffectStates[data->effectBlockIndex].loopCount = data->loopCount;
 	if (data->operation == 1)
 	{ // Start
-		if (data->loopCount > 0) g_EffectStates[data->effectBlockIndex].totalDuration *= data->loopCount;
-		if (data->loopCount == 0xFF) g_EffectStates[data->effectBlockIndex].totalDuration = USB_DURATION_INFINITE;
+		if (data->loopCount == 0xFF)
+        {
+            g_EffectStates[data->effectBlockIndex].totalDuration = USB_DURATION_INFINITE;
+		}
+        else if (data->loopCount > 0)
+        {
+            g_EffectStates[data->effectBlockIndex].totalDuration = (
+                g_EffectStates[data->effectBlockIndex].startDelay
+                + g_EffectStates[data->effectBlockIndex].duration
+              ) * data->loopCount;
+        }
 		StartEffect(data->effectBlockIndex);
 	}
 	else if (data->operation == 2)
@@ -163,14 +175,27 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 {
 	volatile TEffectState* effect = &g_EffectStates[data->effectBlockIndex];
 
-	effect->duration = data->duration + data->startDelay;
+	effect->duration = data->duration;
 	effect->directionX = data->directionX;
 	effect->directionY = data->directionY;
 	effect->effectType = data->effectType;
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
     effect->startDelay = data->startDelay;
-	effect->totalDuration = data->duration + data->startDelay;
+    
+    // we can receive new length of effect while the effect is already looping
+    // recalculate durations as (duration+delay)*loopCount unless the loopCount is infinite
+    if (effect->loopCount != 0xFF)
+    {
+        uint8_t loopCount = effect->loopCount > 0 ? effect->loopCount : 1;
+        effect->totalDuration = (data->duration + data->startDelay) * loopCount;
+    }
+	//Serial.print("lC: ");
+	//Serial.println(effect->loopCount);
+	//Serial.print("d: ");
+	//Serial.print(effect->duration);
+	//Serial.print("tD: ");
+	//Serial.println(effect->totalDuration);
 	//Serial.print("sD: ");
 	//Serial.println(effect->startDelay);
 	//Serial.print("dX: ");

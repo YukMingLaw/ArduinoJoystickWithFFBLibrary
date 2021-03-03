@@ -77,7 +77,9 @@ void updateEffects(bool recalculate){
     #ifdef DEBUG
     if (diffTime > 0 && recalculate) {
         Serial.print("F");
-        Serial.println(forces[0]);
+        Serial.print(forces[0]);
+        Serial.print(",");
+        Serial.println(forces[1]);
     }
     #endif
 }

@@ -55,12 +55,12 @@ typedef struct //FFB: Set Effect Output Report
 	uint16_t duration; // 0..32767 ms
 	uint16_t triggerRepeatInterval; // 0..32767 ms
 	uint16_t samplePeriod;	// 0..32767 ms
+    uint16_t startDelay;    // 0..32767 ms
 	uint8_t	gain;	// 0..255	 (physical 0..10000)
 	uint8_t	triggerButton;	// button ID (0..8)
 	uint8_t	enableAxis; // bits: 0=X, 1=Y, 2=DirectionEnable
 	uint8_t	directionX;	// angle (0=0 .. 255=360deg)
 	uint8_t	directionY;	// angle (0=0 .. 255=360deg)
-    uint16_t startDelay;    // 0..32767 ms
 } USB_FFBReport_SetEffect_Output_Data_t;
 
 typedef struct//FFB: Set Envelope Output Report
@@ -241,5 +241,6 @@ typedef struct {
 	uint16_t  period; // 0..32767 ms
 	uint16_t duration, fadeTime, attackTime, elapsedTime, totalDuration, startDelay;
 	uint64_t startTime;
+	uint8_t loopCount;
 } TEffectState;
 #endif

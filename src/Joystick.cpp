@@ -123,10 +123,6 @@ Joystick_::Joystick_(
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x85;
     tempHidReportDescriptor[hidReportDescriptorSize++] = 0x01;
 
-	// COLLECTION (Physical)
-	tempHidReportDescriptor[hidReportDescriptorSize++] = 0xa1;
-	tempHidReportDescriptor[hidReportDescriptorSize++] = 0x00;
-
 	if (_buttonCount > 0) {
 
 		// USAGE_PAGE (Button)
@@ -413,9 +409,6 @@ Joystick_::Joystick_(
 		tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
 	} // Simulation Controls
 
-    // END_COLLECTION
-    tempHidReportDescriptor[hidReportDescriptorSize++] = 0xc0;
-
 	// Create a copy of the HID Report Descriptor template that is just the right size
 	uint8_t *customHidReportDescriptor = new uint8_t[hidReportDescriptorSize];
 	memcpy(customHidReportDescriptor, tempHidReportDescriptor, hidReportDescriptorSize);
@@ -548,36 +541,48 @@ void Joystick_::forceCalculator(int32_t* forces) {
         int32_t force = 0;
 	    for (int id = 0; id < MAX_EFFECTS; id++) {
 	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
+
+            effect.elapsedTime = (uint64_t)millis() - effect.startTime;
+            // totalDuration counts all repetitions (duration+delay) * loopCount
+            if ((effect.totalDuration == USB_DURATION_INFINITE) ||
+                (effect.elapsedTime < effect.totalDuration))
+            {
+                // if we are still running the effect
+                // show where in the loop we are
+                effect.elapsedTime = effect.elapsedTime % (effect.duration + effect.startDelay);
+            }
+            effect.elapsedTime -= effect.startDelay;
+
 	    	if ((effect.state == MEFFECTSTATE_PLAYING) &&
+                // dont calculate effects that havent reached their startDelay
+	    	    (effect.elapsedTime >= 0) &&
+                // dont calculate effects that have already finished
 	    	    (effect.elapsedTime <= effect.duration) &&
 	    		!DynamicHID().pidReportHandler.devicePaused)
             {
-                // dont calculate effects that havent reached their startDelay
-	    	    if (effect.elapsedTime >= effect.startDelay)
-				{
-					if (effect.enableAxis == DIRECTION_ENABLE
-						|| effect.enableAxis & X_AXIS_ENABLE)
-					{
-						forces[0] += (int32_t)(getEffectForce(effect, m_effect_params[0], 0));
-					}
-					if (effect.enableAxis == DIRECTION_ENABLE
-						|| effect.enableAxis & Y_AXIS_ENABLE)
-					{
-						forces[1] += (int32_t)(getEffectForce(effect, m_effect_params[1], 1));
-					}
-				}
-
-				effect.elapsedTime = (uint64_t)millis() - effect.startTime + effect.startDelay;
-                // totalDuration counts all repetitions
-                // duration has the sum of effect duration + delay
-				if ((effect.totalDuration == USB_DURATION_INFINITE) ||
-					(effect.elapsedTime < effect.totalDuration))
-				{
-                    // if we are still running the effect
-                    // show where in the loop we are
-					effect.elapsedTime = effect.elapsedTime % effect.duration;
-				}
+                if (effect.enableAxis == DIRECTION_ENABLE
+                    || effect.enableAxis & X_AXIS_ENABLE)
+                {
+                    forces[0] += (int32_t)(getEffectForce(effect, m_effect_params[0], 0));
+                }
+                if (effect.enableAxis == DIRECTION_ENABLE
+                    || effect.enableAxis & Y_AXIS_ENABLE)
+                {
+                    forces[1] += (int32_t)(getEffectForce(effect, m_effect_params[1], 1));
+                }
             }
+
+            //if (effect.state == MEFFECTSTATE_PLAYING)
+            //{
+            //    Serial.print("eT");
+            //    Serial.print(effect.elapsedTime);
+            //    Serial.print("sD");
+            //    Serial.print(effect.startDelay);
+            //    Serial.print("d");
+            //    Serial.print(effect.duration);
+            //    Serial.print("tD");
+            //    Serial.println(effect.totalDuration);
+            //}
 	    }
 	forces[0] = (int32_t)((float)totalGain * forces[0]); // each effect gain * total effect gain = 10000
 	forces[1] = (int32_t)((float)totalGain * forces[1]); // each effect gain * total effect gain = 10000
