@@ -11,9 +11,9 @@ void updateJoystickPos() {
 
 void updateEffects(bool recalculate){
     for (int i =0; i < 2; i++) {
-        effects[i].frictionMaxPositionChange = 800; // TODO: find proper values for these
-        effects[i].inertiaMaxAcceleration = 60;
-        effects[i].damperMaxVelocity = 800;
+        effects[i].frictionMaxPositionChange = 250; // TODO: find proper values for these automatically
+        effects[i].inertiaMaxAcceleration = 15;
+        effects[i].damperMaxVelocity = 250;
     }
 
     effects[0].springMaxPosition = maxX;
@@ -24,11 +24,6 @@ void updateEffects(bool recalculate){
     unsigned long currentMillis;
     currentMillis = millis();
     int16_t diffTime = currentMillis - lastEffectsUpdate;
-
-    #ifdef DEBUG
-    write_order(LOG);
-    Serial.print(currentMillis);
-    #endif
 
     if (diffTime > 0 && recalculate) {
         lastEffectsUpdate = currentMillis;
@@ -47,10 +42,12 @@ void updateEffects(bool recalculate){
         effects[1].damperVelocity = velY;
 
         #ifdef DEBUG
+        write_order(LOG);
+        Serial.print(currentMillis);
         Serial.print("X");
         Serial.print(pos[0]);
-        Serial.print("L");
-        Serial.print(lastX);
+        Serial.print("Y");
+        Serial.print(pos[1]);
         Serial.print("C");
         Serial.print(positionChangeX);
         Serial.print("V");
@@ -76,8 +73,11 @@ void updateEffects(bool recalculate){
 
     Joystick.setEffectParams(effects);
     Joystick.getForce(forces);
+
     #ifdef DEBUG
-    Serial.print("F");
-    Serial.println(forces[0]);
+    if (diffTime > 0 && recalculate) {
+        Serial.print("F");
+        Serial.println(forces[0]);
+    }
     #endif
 }

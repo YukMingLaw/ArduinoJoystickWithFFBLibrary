@@ -41,11 +41,14 @@
 #define JOYSTICK_INCLUDE_THROTTLE    B00000010
 #define JOYSTICK_INCLUDE_ACCELERATOR B00000100
 
-const float cutoff_freq_damper   = 5.0;  //Cutoff frequency in Hz
+const float cutoff_freq_damper   = 2.0;  //Cutoff frequency in Hz
 const float sampling_time_damper = 0.002; //Sampling time in seconds.
-Filter damperFilter(cutoff_freq_damper, sampling_time_damper);
-Filter inertiaFilter(cutoff_freq_damper, sampling_time_damper);
-Filter frictionFilter(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter damperFilterX(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter inertiaFilterX(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter frictionFilterX(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter damperFilterY(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter inertiaFilterY(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter frictionFilterY(cutoff_freq_damper, sampling_time_damper);
 
 Joystick_::Joystick_(
 	uint8_t hidReportId,
@@ -516,6 +519,7 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	break;
 	    case USB_EFFECT_DAMPER://9
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, _effect_params.damperMaxVelocity), axis) * damperGain;
+		    force = axis == 0 ? damperFilterX.update(force) : damperFilterY.update(force);
 	    	break;
 	    case USB_EFFECT_INERTIA://10
 	    	if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange < 0) {
@@ -524,12 +528,14 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	else if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange > 0) {
 	    		force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration)), axis) * inertiaGain;
 	    	}
+		    force = axis == 0 ? inertiaFilterX.update(force) : inertiaFilterY.update(force);
 	    	break;
 	    case USB_EFFECT_FRICTION://11
-	    		force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), axis) * frictionGain;
-	    		break;
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), axis) * frictionGain;
+            force = axis == 0 ? frictionFilterX.update(force) : frictionFilterY.update(force);
+	    	break;
 	    case USB_EFFECT_CUSTOM://12
-	    		break;
+	    	break;
 	    }
 
 		return force;
@@ -718,19 +724,6 @@ int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float
 	}
 	else return 0;
 	tempForce = -tempForce * effect.gain / 255;
-	switch (effect.effectType) {
-	case  USB_EFFECT_DAMPER:
-		tempForce = damperFilter.filterIn(tempForce);
-		break;
-	case USB_EFFECT_INERTIA:
-		tempForce = inertiaFilter.filterIn(tempForce);
-		break;
-	case USB_EFFECT_FRICTION:
-		tempForce = frictionFilter.filterIn(tempForce);
-		break;
-	default:
-		break;
-	}
 	return (int32_t)tempForce;
 }
 
