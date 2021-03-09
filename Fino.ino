@@ -56,7 +56,6 @@ void setup() {
 }
 
 void loop(){
-    pos_updated = false;
     get_messages_from_serial();
 
     unsigned long currentMillis;
@@ -70,6 +69,7 @@ void loop(){
         if (currentMillis >= nextEffectsMillis || pos_updated) {
             updateEffects(true);
             nextEffectsMillis = currentMillis + 100;
+            pos_updated = false;
         } else {
             // calculate forces without recalculating condition forces
             // this helps having smoother spring/damper/friction
