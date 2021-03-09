@@ -487,7 +487,7 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
     if (axis == 0) {
         angle_ratio = -1 * sin(angle);
     } else {
-        angle_ratio = -1 * cos(angle);
+        angle_ratio = cos(angle);
     }
 
 	int32_t force = 0;
@@ -593,7 +593,7 @@ int32_t Joystick_::ConstantForceCalculator(volatile TEffectState& effect)
 
 int32_t Joystick_::RampForceCalculator(volatile TEffectState& effect) 
 {
-	int32_t rampForce = effect.startMagnitude + effect.elapsedTime * (effect.endMagnitude - effect.startMagnitude) / effect.duration;
+	int32_t rampForce = effect.startMagnitude + ((float)effect.elapsedTime / effect.duration) * (effect.endMagnitude - effect.startMagnitude);
 	return rampForce;
 }
 
@@ -649,7 +649,7 @@ int32_t Joystick_::TriangleForceCalculator(volatile TEffectState& effect)
 	if (reminder > (periodF / 2)) tempforce = slope * (periodF - reminder);
 	else tempforce = slope * reminder;
 	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+	return ApplyEnvelope(effect, -tempforce);
 }
 
 int32_t Joystick_::SawtoothDownForceCalculator(volatile TEffectState& effect) 
@@ -670,7 +670,7 @@ int32_t Joystick_::SawtoothDownForceCalculator(volatile TEffectState& effect)
 	float tempforce = 0;
 	tempforce = slope * (period - reminder);
 	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+	return ApplyEnvelope(effect, -tempforce);
 }
 
 int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect) 
@@ -691,7 +691,7 @@ int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect)
 	float tempforce = 0;
 	tempforce = slope * reminder;
 	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+	return ApplyEnvelope(effect, -tempforce);
 }
 
 int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis)
