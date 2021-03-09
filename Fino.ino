@@ -1,6 +1,6 @@
 #define DEBUGNO
 // the digits mean Mmmmrrr (M=Major,m=minor,r=revision)
-#define SKETCH_VERSION 2000001
+#define SKETCH_VERSION 2001000
 
 #include "src/Joystick.h"
 #include "config.h"
@@ -56,7 +56,6 @@ void setup() {
 }
 
 void loop(){
-    pos_updated = false;
     get_messages_from_serial();
 
     unsigned long currentMillis;
@@ -70,6 +69,7 @@ void loop(){
         if (currentMillis >= nextEffectsMillis || pos_updated) {
             updateEffects(true);
             nextEffectsMillis = currentMillis + 100;
+            pos_updated = false;
         } else {
             // calculate forces without recalculating condition forces
             // this helps having smoother spring/damper/friction

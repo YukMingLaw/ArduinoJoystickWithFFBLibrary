@@ -41,11 +41,14 @@
 #define JOYSTICK_INCLUDE_THROTTLE    B00000010
 #define JOYSTICK_INCLUDE_ACCELERATOR B00000100
 
-const float cutoff_freq_damper   = 5.0;  //Cutoff frequency in Hz
+const float cutoff_freq_damper   = 2.0;  //Cutoff frequency in Hz
 const float sampling_time_damper = 0.002; //Sampling time in seconds.
-Filter damperFilter(cutoff_freq_damper, sampling_time_damper);
-Filter inertiaFilter(cutoff_freq_damper, sampling_time_damper);
-Filter frictionFilter(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter damperFilterX(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter inertiaFilterX(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter frictionFilterX(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter damperFilterY(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter inertiaFilterY(cutoff_freq_damper, sampling_time_damper);
+LowPassFilter frictionFilterY(cutoff_freq_damper, sampling_time_damper);
 
 Joystick_::Joystick_(
 	uint8_t hidReportId,
@@ -484,7 +487,7 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
     if (axis == 0) {
         angle_ratio = -1 * sin(angle);
     } else {
-        angle_ratio = -1 * cos(angle);
+        angle_ratio = cos(angle);
     }
 
 	int32_t force = 0;
@@ -516,6 +519,7 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	break;
 	    case USB_EFFECT_DAMPER://9
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, _effect_params.damperMaxVelocity), axis) * damperGain;
+		    force = axis == 0 ? damperFilterX.update(force) : damperFilterY.update(force);
 	    	break;
 	    case USB_EFFECT_INERTIA://10
 	    	if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange < 0) {
@@ -524,12 +528,14 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	else if (_effect_params.inertiaAcceleration < 0 && _effect_params.frictionPositionChange > 0) {
 	    		force = -1 * ConditionForceCalculator(effect, abs(NormalizeRange(_effect_params.inertiaAcceleration, _effect_params.inertiaMaxAcceleration)), axis) * inertiaGain;
 	    	}
+		    force = axis == 0 ? inertiaFilterX.update(force) : inertiaFilterY.update(force);
 	    	break;
 	    case USB_EFFECT_FRICTION://11
-	    		force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), axis) * frictionGain;
-	    		break;
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.frictionPositionChange, _effect_params.frictionMaxPositionChange), axis) * frictionGain;
+            force = axis == 0 ? frictionFilterX.update(force) : frictionFilterY.update(force);
+	    	break;
 	    case USB_EFFECT_CUSTOM://12
-	    		break;
+	    	break;
 	    }
 
 		return force;
@@ -587,7 +593,7 @@ int32_t Joystick_::ConstantForceCalculator(volatile TEffectState& effect)
 
 int32_t Joystick_::RampForceCalculator(volatile TEffectState& effect) 
 {
-	int32_t rampForce = effect.startMagnitude + effect.elapsedTime * (effect.endMagnitude - effect.startMagnitude) / effect.duration;
+	int32_t rampForce = effect.startMagnitude + ((float)effect.elapsedTime / effect.duration) * (effect.endMagnitude - effect.startMagnitude);
 	return rampForce;
 }
 
@@ -643,7 +649,7 @@ int32_t Joystick_::TriangleForceCalculator(volatile TEffectState& effect)
 	if (reminder > (periodF / 2)) tempforce = slope * (periodF - reminder);
 	else tempforce = slope * reminder;
 	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+	return ApplyEnvelope(effect, -tempforce);
 }
 
 int32_t Joystick_::SawtoothDownForceCalculator(volatile TEffectState& effect) 
@@ -664,7 +670,7 @@ int32_t Joystick_::SawtoothDownForceCalculator(volatile TEffectState& effect)
 	float tempforce = 0;
 	tempforce = slope * (period - reminder);
 	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+	return ApplyEnvelope(effect, -tempforce);
 }
 
 int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect) 
@@ -685,7 +691,7 @@ int32_t Joystick_::SawtoothUpForceCalculator(volatile TEffectState& effect)
 	float tempforce = 0;
 	tempforce = slope * reminder;
 	tempforce += minMagnitude;
-	return ApplyEnvelope(effect, tempforce);
+	return ApplyEnvelope(effect, -tempforce);
 }
 
 int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis)
@@ -718,19 +724,6 @@ int32_t Joystick_::ConditionForceCalculator(volatile TEffectState& effect, float
 	}
 	else return 0;
 	tempForce = -tempForce * effect.gain / 255;
-	switch (effect.effectType) {
-	case  USB_EFFECT_DAMPER:
-		tempForce = damperFilter.filterIn(tempForce);
-		break;
-	case USB_EFFECT_INERTIA:
-		tempForce = inertiaFilter.filterIn(tempForce);
-		break;
-	case USB_EFFECT_FRICTION:
-		tempForce = frictionFilter.filterIn(tempForce);
-		break;
-	default:
-		break;
-	}
 	return (int32_t)tempForce;
 }
 
