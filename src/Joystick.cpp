@@ -464,6 +464,16 @@ void Joystick_::getForce(int32_t* forces) {
 
 int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _effect_params, uint8_t axis){
 
+    // if (effect.state == MEFFECTSTATE_PLAYING)
+    // {
+    //    Serial.print("eA");
+    //    Serial.print(effect.enableAxis);
+    //    Serial.print("dX");
+    //    Serial.print(effect.directionX);
+    //    Serial.print("dY");
+    //    Serial.println(effect.directionY);
+    // }
+
     uint8_t direction;
     if (effect.enableAxis == DIRECTION_ENABLE)
     {
