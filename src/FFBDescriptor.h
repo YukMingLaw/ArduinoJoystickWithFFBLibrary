@@ -113,23 +113,25 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	  0x05, 0x01,           //        Usage Page (Generic Desktop)
 	  0x09, 0x30,           //        Usage (X)//
 	  0x09, 0x31,           //        Usage (Y)//
+	  0x09, 0x32,           //        Usage (Z)//
 	  0x15, 0x00,           //        Logical Minimum (0)
 	  0x25, 0x01,           //        Logical Maximum (1)
 	  0x75, 0x01,           //        Report Size (1)
-	  0x95, 0x02,           //        Report Count (2)
+	  0x95, 0x03,           //        Report Count (3)
 	  0x91, 0x02,           //        Output (Data,Var,Abs)
 	0xC0,                 //      End Collection Datalink (Logical)
 
 	0x05, 0x0F,           //    Usage Page (Physical Interface)
 	0x09, 0x56,           //      Usage (Direction Enable)
 	0x95, 0x01,           //        Report Count (1)
-	0x91, 0x02,           //        Output (Data,Var,Abs)
-	0x95, 0x05,           //        Report Count (5)
+	0x91, 0x03,           //        Output (Data,Var,Abs)
+	0x95, 0x04,           //        Report Count (4)
 	0x91, 0x03,           //        Output (Constant, Variable)
 	0x09, 0x57,           //      Usage (Direction)
 	0xA1, 0x02,           //        Collection Datalink (Logical)
 	  0x0B, 0x01, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 1)
 	  0x0B, 0x02, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 2)
+	  0x0B, 0x03, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 3)
 	  0x66, 0x14, 0x00,     //          Unit (20)
 	  0x55, 0xFE,           //          Unit Exponent (254)
 	  0x15, 0x00,           //          Logical Minimum (0)
@@ -138,11 +140,23 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	  0x47, 0xA0, 0x8C, 0, 0, //          Physical Maximum (36000)
 	  0x66, 0x00, 0x00,     //          Unit (0)
 	  0x75, 0x08,           //          Report Size (8)
-	  0x95, 0x02,           //          Report Count (2)
+	  0x95, 0x03,           //          Report Count (3)
 	  0x91, 0x02,           //          Output (Data,Var,Abs)
 	  0x55, 0x00,           //          Unit Exponent (0)
 	  0x66, 0x00, 0x00,     //          Unit (0)
 	0xC0,                 //        End Collection Datalink (Logical)
+
+	0x05, 0x0F,           //    Usage Page (Physical Interface)
+	0x09, 0x58,           //      Usage (Type Specific Block Offset)
+	0xA1, 0x02,           //        Collection (Logical)
+	 0x0B, 0x01, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 1)
+	 0x0B, 0x02, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 2)
+	 0x26, 0xFD, 0x7F,     //          Logical Maximum (32765); 32K RAM or ROM max.
+	 0x75, 0x10,           //          Report Size (16)
+	 0x95, 0x02,           //          Report Count (2)
+	 0x91, 0x02,           //          Output (Data,Var,Abs)
+	0xC0,                 //        End Collection (Logical)
+
   0xC0,                 //End Collection Datalink (Logical) (OK)
 
   // SetEnvelopeReport
@@ -370,12 +384,13 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	0x05, 0x01,           //  Usage Page (Generic Desktop)
 	0x09, 0x30,           //    Usage (X)
 	0x09, 0x31,           //    Usage (Y)
+	0x09, 0x32,           //    Usage (Z)
 	0x15, 0x81,           //     Logical Minimum (-127)
 	0x25, 0x7F,           //     Logical Maximum (127)
 	0x35, 0x00,           //     Physical Minimum (0)
 	0x46, 0xFF, 0x00,     //     Physical Maximum (255)
 	0x75, 0x08,           //     Report Size (8)
-	0x95, 0x02,           //     Report Count (2)
+	0x95, 0x03,           //     Report Count (3)
 	0x91, 0x02,           //     Output (Data,Var,Abs)
   0xC0,                 //End Collection Datalink (Logical) (OK)
 
