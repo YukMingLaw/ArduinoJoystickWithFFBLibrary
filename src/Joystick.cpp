@@ -469,28 +469,26 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
     //    Serial.print("eA");
     //    Serial.print(effect.enableAxis);
     //    Serial.print("dX");
-    //    Serial.print(effect.directionX);
+    //    Serial.print(effect.direction[0]);
     //    Serial.print("dY");
-    //    Serial.println(effect.directionY);
+    //    Serial.println(effect.direction[1]);
     // }
 
-    uint8_t direction;
+    float angle_ratio;
     if (effect.enableAxis == DIRECTION_ENABLE)
     {
-        direction = effect.directionX;
+        float angle = (axis < 2 ? effect.direction[0] : effect.direction[1]) * 360.0 / 255.0 * DEG_TO_RAD;
+        if (axis == 0)
+        {
+            // angle=0 points "up"
+            angle_ratio = -1 * sin(angle);
+        } else {
+            angle_ratio = cos(angle);
+        }
     }
     else
     {
-        direction = axis == 0 ? effect.directionX : effect.directionY;
-    }
-
-    float angle;
-    angle = (direction * 360.0 / 255.0) * DEG_TO_RAD;
-    float angle_ratio;
-    if (axis == 0) {
-        angle_ratio = -1 * sin(angle);
-    } else {
-        angle_ratio = cos(angle);
+        angle_ratio = 1.0;
     }
 
 	int32_t force = 0;

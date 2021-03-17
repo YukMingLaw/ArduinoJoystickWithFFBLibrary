@@ -59,8 +59,7 @@ typedef struct //FFB: Set Effect Output Report
 	uint8_t	gain;	// 0..255	 (physical 0..10000)
 	uint8_t	triggerButton;	// button ID (0..8)
 	uint8_t	enableAxis; // bits: 0=X, 1=Y, 2=DirectionEnable
-	uint8_t	directionX;	// angle (0=0 .. 255=360deg)
-	uint8_t	directionY;	// angle (0=0 .. 255=360deg)
+	uint8_t	direction[FFB_AXIS_COUNT];	// angle (0=0 .. 255=360deg)
 } USB_FFBReport_SetEffect_Output_Data_t;
 
 typedef struct//FFB: Set Envelope Output Report
@@ -230,8 +229,7 @@ typedef struct {
 	int16_t attackLevel, fadeLevel;
 	int16_t magnitude;
 	uint8_t enableAxis; // bits: 0=X, 1=Y, 2=DirectionEnable
-	uint8_t directionX; // angle (0=0 .. 255=360deg)
-	uint8_t directionY; // angle (0=0 .. 255=360deg)
+	uint8_t direction[FFB_AXIS_COUNT]; // angle (0=0 .. 255=360deg)
 
 	TEffectCondition conditions[FFB_AXIS_COUNT];
 
@@ -242,5 +240,6 @@ typedef struct {
 	uint16_t duration, fadeTime, attackTime, elapsedTime, totalDuration, startDelay;
 	uint64_t startTime;
 	uint8_t loopCount;
+	uint8_t conditionReportsCount;
 } TEffectState;
 #endif

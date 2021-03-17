@@ -176,8 +176,10 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 	volatile TEffectState* effect = &g_EffectStates[data->effectBlockIndex];
 
 	effect->duration = data->duration;
-	effect->directionX = data->directionX;
-	effect->directionY = data->directionY;
+    for (int i=0; i<FFB_AXIS_COUNT; ++i)
+    {
+        effect->direction[i] = data->direction[i];
+    }
 	effect->effectType = data->effectType;
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
@@ -222,12 +224,46 @@ void PIDReportHandler::SetEnvelope(USB_FFBReport_SetEnvelope_Output_Data_t* data
 void PIDReportHandler::SetCondition(USB_FFBReport_SetCondition_Output_Data_t* data, volatile TEffectState* effect)
 {
         uint8_t axis = data->parameterBlockOffset; 
-        effect->conditions[axis].cpOffset = data->cpOffset;
-        effect->conditions[axis].positiveCoefficient = data->positiveCoefficient;
-        effect->conditions[axis].negativeCoefficient = data->negativeCoefficient;
-        effect->conditions[axis].positiveSaturation = data->positiveSaturation;
-        effect->conditions[axis].negativeSaturation = data->negativeSaturation;
-        effect->conditions[axis].deadBand = data->deadBand;
+        if (axis >= effect->conditionReportsCount)
+        {
+            effect->conditionReportsCount = axis + 1;
+        }
+
+        // if we only find one condition report, calculate one per axis based
+        // on the condition values and the effect direction
+        // if we end up receiving more reports they
+        // would just overwrite this data
+        if (effect->conditionReportsCount == 1)
+        {
+            float cos_x = cos(effect->direction[0]);
+            float sin_x = sin(effect->direction[0]);
+            float max_cos_sin = abs(cos_x) > abs(sin_x) ? abs(cos_x) : abs(sin_x);
+            for (int i=0; i<FFB_AXIS_COUNT; ++i)
+            {
+                float angle = (i < 2 ? effect->direction[0] : effect->direction[1]) * 360.0 / 255.0 * DEG_TO_RAD;
+                float angle_ratio;
+                if (axis == 0)
+                {
+                    // angle=0 points "up"
+                    angle_ratio = -sin_x / max_cos_sin;
+                } else {
+                    angle_ratio = cos(angle) / max_cos_sin;
+                }
+                effect->conditions[i].cpOffset = data->cpOffset * angle_ratio;
+                effect->conditions[i].positiveCoefficient = data->positiveCoefficient * angle_ratio;
+                effect->conditions[i].negativeCoefficient = data->negativeCoefficient * angle_ratio;
+                effect->conditions[i].positiveSaturation = data->positiveSaturation * angle_ratio;
+                effect->conditions[i].negativeSaturation = data->negativeSaturation * angle_ratio;
+                effect->conditions[i].deadBand = data->deadBand * angle_ratio;
+            }
+        } else {
+            effect->conditions[axis].cpOffset = data->cpOffset;
+            effect->conditions[axis].positiveCoefficient = data->positiveCoefficient;
+            effect->conditions[axis].negativeCoefficient = data->negativeCoefficient;
+            effect->conditions[axis].positiveSaturation = data->positiveSaturation;
+            effect->conditions[axis].negativeSaturation = data->negativeSaturation;
+            effect->conditions[axis].deadBand = data->deadBand;
+        }
 }
 
 void PIDReportHandler::SetPeriodic(USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState* effect)
