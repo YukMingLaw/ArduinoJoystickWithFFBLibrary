@@ -58,7 +58,6 @@
 #define DIRECTION_ENABLE                   0x04
 #define X_AXIS_ENABLE                      0x01
 #define Y_AXIS_ENABLE                      0x02
-#define FFB_AXIS_COUNT                     0x02
 #define FORCE_FEEDBACK_MAXGAIN              100
 #define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
 

@@ -28,7 +28,7 @@
 #define _PIDREPORTTYPE_H
 
 #define MAX_EFFECTS 14
-#define FFB_AXIS_COUNT 2
+#define FFB_AXIS_COUNT 3
 #define SIZE_EFFECT sizeof(TEffectState)
 #define MEMORY_SIZE (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 #define TO_LT_END_16(x) ((x<<8)&0xFF00)|((x>>8)&0x00FF)
