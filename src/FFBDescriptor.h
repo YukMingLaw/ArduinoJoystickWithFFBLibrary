@@ -112,26 +112,34 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	0xA1, 0x02,           //      Collection Datalink (Logical)
 	  0x05, 0x01,           //        Usage Page (Generic Desktop)
 	  0x09, 0x30,           //        Usage (X)//
+      #if FFB_AXIS_COUNT >= 2
 	  0x09, 0x31,           //        Usage (Y)//
+      #endif
+      #if FFB_AXIS_COUNT >= 3
 	  0x09, 0x32,           //        Usage (Z)//
+      #endif
 	  0x15, 0x00,           //        Logical Minimum (0)
 	  0x25, 0x01,           //        Logical Maximum (1)
 	  0x75, 0x01,           //        Report Size (1)
-	  0x95, 0x03,           //        Report Count (3)
+	  0x95, FFB_AXIS_COUNT,           //        Report Count (3)
 	  0x91, 0x02,           //        Output (Data,Var,Abs)
 	0xC0,                 //      End Collection Datalink (Logical)
 
 	0x05, 0x0F,           //    Usage Page (Physical Interface)
 	0x09, 0x56,           //      Usage (Direction Enable)
 	0x95, 0x01,           //        Report Count (1)
-	0x91, 0x03,           //        Output (Data,Var,Abs)
-	0x95, 0x04,           //        Report Count (4)
+	0x91, 0x02,           //        Output (Data,Var,Abs)
+	0x95, 0x08 - FFB_AXIS_COUNT - 1,           //        Report Count (4)
 	0x91, 0x03,           //        Output (Constant, Variable)
 	0x09, 0x57,           //      Usage (Direction)
 	0xA1, 0x02,           //        Collection Datalink (Logical)
 	  0x0B, 0x01, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 1)
+      #if FFB_AXIS_COUNT >= 2
 	  0x0B, 0x02, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 2)
+      #endif
+      #if FFB_AXIS_COUNT >= 3
 	  0x0B, 0x03, 0, 0x0A, 0,  //          Usage (Ordinals: Instance 3)
+      #endif
 	  0x66, 0x14, 0x00,     //          Unit (20)
 	  0x55, 0xFE,           //          Unit Exponent (254)
 	  0x15, 0x00,           //          Logical Minimum (0)
@@ -140,7 +148,7 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	  0x47, 0xA0, 0x8C, 0, 0, //          Physical Maximum (36000)
 	  0x66, 0x00, 0x00,     //          Unit (0)
 	  0x75, 0x08,           //          Report Size (8)
-	  0x95, 0x03,           //          Report Count (3)
+	  0x95, FFB_AXIS_COUNT,           //          Report Count (3)
 	  0x91, 0x02,           //          Output (Data,Var,Abs)
 	  0x55, 0x00,           //          Unit Exponent (0)
 	  0x66, 0x00, 0x00,     //          Unit (0)
@@ -383,14 +391,18 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	0x85, 0x08,           //Report ID 8
 	0x05, 0x01,           //  Usage Page (Generic Desktop)
 	0x09, 0x30,           //    Usage (X)
+    #if FFB_AXIS_COUNT >= 2
 	0x09, 0x31,           //    Usage (Y)
+    #endif
+    #if FFB_AXIS_COUNT >= 3
 	0x09, 0x32,           //    Usage (Z)
+    #endif
 	0x15, 0x81,           //     Logical Minimum (-127)
 	0x25, 0x7F,           //     Logical Maximum (127)
 	0x35, 0x00,           //     Physical Minimum (0)
 	0x46, 0xFF, 0x00,     //     Physical Maximum (255)
 	0x75, 0x08,           //     Report Size (8)
-	0x95, 0x03,           //     Report Count (3)
+	0x95, FFB_AXIS_COUNT,           //     Report Count (3)
 	0x91, 0x02,           //     Output (Data,Var,Abs)
   0xC0,                 //End Collection Datalink (Logical) (OK)
 

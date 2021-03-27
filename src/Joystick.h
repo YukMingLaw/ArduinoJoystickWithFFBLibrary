@@ -55,9 +55,6 @@
 #define JOYSTICK_TYPE_GAMEPAD              0x05
 #define JOYSTICK_TYPE_MULTI_AXIS           0x08
 
-#define DIRECTION_ENABLE                   0x04
-#define X_AXIS_ENABLE                      0x01
-#define Y_AXIS_ENABLE                      0x02
 #define FORCE_FEEDBACK_MAXGAIN              100
 #define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
 
@@ -148,8 +145,9 @@ private:
 	int32_t TriangleForceCalculator(volatile TEffectState& effect);
 	int32_t SawtoothDownForceCalculator(volatile TEffectState& effect);
 	int32_t SawtoothUpForceCalculator(volatile TEffectState& effect);
-	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t axis);
+	int32_t ConditionForceCalculator(volatile TEffectState& effect, float metric, uint8_t conditionReport);
 	void forceCalculator(int32_t* forces);
+	float getAngleRatio(volatile TEffectState& effect, int axis);
 	int32_t getEffectForce(volatile TEffectState& effect, EffectParams _effect_params, uint8_t axis);
 protected:
 	int buildAndSet16BitValue(bool includeValue, int16_t value, int16_t valueMinimum, int16_t valueMaximum, int16_t actualMinimum, int16_t actualMaximum, uint8_t dataLocation[]);

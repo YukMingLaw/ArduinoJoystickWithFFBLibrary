@@ -39,7 +39,7 @@ int32_t forces[2] = {0, 0};
 Joystick_ Joystick(
     JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
     19, 2, // Button Count, Hat Switch Count
-    true, true, true, // X, Y, Z
+    true, true, false, // X, Y, Z
     false, false, false, // Rx, Ry, Rz
     true, true); // rudder, throttle
 

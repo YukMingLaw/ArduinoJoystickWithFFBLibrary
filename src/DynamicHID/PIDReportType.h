@@ -28,7 +28,7 @@
 #define _PIDREPORTTYPE_H
 
 #define MAX_EFFECTS 14
-#define FFB_AXIS_COUNT 3
+#define FFB_AXIS_COUNT 2
 #define SIZE_EFFECT sizeof(TEffectState)
 #define MEMORY_SIZE (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 #define TO_LT_END_16(x) ((x<<8)&0xFF00)|((x>>8)&0x00FF)
@@ -205,7 +205,8 @@ typedef struct// FFB: PID Pool Feature Report
 
 #define X_AXIS_ENABLE				0x01
 #define Y_AXIS_ENABLE				0x02
-#define DIRECTION_ENABLE			0x04
+#define Z_AXIS_ENABLE				0x04
+#define DIRECTION_ENABLE			0x01 << FFB_AXIS_COUNT
 //these were needed for testing
 #define INERTIA_FORCE 				0xFF
 #define FRICTION_FORCE				0xFF
