@@ -26,6 +26,7 @@ uint8_t PIDReportHandler::GetNextFreeEffect(void)
 	}
 
 	g_EffectStates[id].state = MEFFECTSTATE_ALLOCATED;
+    pidState.effectBlockIndex = id;
 
 	return id;
 }
