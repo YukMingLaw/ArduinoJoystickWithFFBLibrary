@@ -11,9 +11,9 @@ void updateJoystickPos() {
 
 void updateEffects(bool recalculate){
     for (int i =0; i < 2; i++) {
-        effects[i].frictionMaxPositionChange = 250; // TODO: find proper values for these automatically
+        effects[i].frictionMaxPositionChange = 25; // TODO: find proper values for these automatically
         effects[i].inertiaMaxAcceleration = 7000;
-        effects[i].damperMaxVelocity = 600;
+        effects[i].damperMaxVelocity = 150;
     }
 
     effects[0].springMaxPosition = maxX;

@@ -14,6 +14,12 @@
 #define sawtoothdownGain default_gain
 #define sawtoothupGain default_gain
 #define springGain default_gain
-#define damperGain default_gain
 #define inertiaGain default_gain
-#define frictionGain default_gain
+#define frictionGain 0.25
+#define damperGain default_gain
+#define damperSplineNumPoints 6
+
+// comment out this line if you don't want to have a spline configuration for the damper
+#define damperSplineGain float damperSplinePoints[2][damperSplineNumPoints] = { \
+    {0, 0, 2500, 6000, 10000, 10000}, \
+    {0, 0, 250, 4000, 5000, 5000}}

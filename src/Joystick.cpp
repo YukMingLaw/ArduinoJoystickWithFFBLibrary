@@ -22,6 +22,9 @@
 #include "../config.h"
 #include "FFBDescriptor.h"
 #include "filters.h"
+#ifdef damperSplineGain
+#include "spline.h"
+#endif
 #if defined(_USING_DYNAMIC_HID)
 
 #define JOYSTICK_REPORT_ID_INDEX 7
@@ -46,6 +49,10 @@ const float sampling_time_damper = 0.002; //Sampling time in seconds.
 LowPassFilter damperFilter[FFB_AXIS_COUNT];
 LowPassFilter inertiaFilter[FFB_AXIS_COUNT];
 LowPassFilter frictionFilter[FFB_AXIS_COUNT];
+
+#ifdef damperSplineGain
+damperSplineGain;
+#endif
 
 
 Joystick_::Joystick_(
@@ -530,7 +537,14 @@ int32_t Joystick_::getEffectForce(volatile TEffectState& effect, EffectParams _e
 	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.springPosition, m_effect_params[axis].springMaxPosition), condition) * angle_ratio * springGain;
 	    	break;
 	    case USB_EFFECT_DAMPER://9
-	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, m_effect_params[axis].damperMaxVelocity), condition) * angle_ratio * damperGain;
+	    	force = ConditionForceCalculator(effect, NormalizeRange(_effect_params.damperVelocity, m_effect_params[axis].damperMaxVelocity), condition) * angle_ratio;
+            #ifdef damperSplineGain
+            force *= (
+                Interpolation::CatmullSpline(damperSplinePoints[0], damperSplinePoints[1], damperSplineNumPoints, abs(force))
+                /10000.0);
+            #else
+	    	force = force * damperGain;
+            #endif
             force = damperFilter[axis].update(force);
 	    	break;
 	    case USB_EFFECT_INERTIA://10
