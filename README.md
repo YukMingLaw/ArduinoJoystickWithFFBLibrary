@@ -10,11 +10,6 @@ There are two different ways you can use this sketch:
 2. You can create your own Arduino based joystick using this library as a base. Instead of sending the position/forces through the COM port you can add potentiometers/motors directly.
 
 
-## TODO:
-
-* Fine tune damper, friction and inertia
-* Reduce memory usage
-
 ## Ref
 
 ### This is based on some other libraries. Thanks a lot for your work!
