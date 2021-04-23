@@ -1,6 +1,6 @@
 #define DEBUGNO
 // the digits mean Mmmmrrr (M=Major,m=minor,r=revision)
-#define SKETCH_VERSION 2003000
+#define SKETCH_VERSION 2004000
 
 #include "src/Joystick.h"
 #include "config.h"

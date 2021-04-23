@@ -12,7 +12,7 @@ void updateJoystickPos() {
 void updateEffects(bool recalculate){
     for (int i =0; i < 2; i++) {
         effects[i].frictionMaxPositionChange = 25; // TODO: find proper values for these automatically
-        effects[i].inertiaMaxAcceleration = 7000;
+        effects[i].inertiaMaxAcceleration = 10;
         effects[i].damperMaxVelocity = 150;
     }
 
@@ -31,8 +31,8 @@ void updateEffects(bool recalculate){
         int16_t positionChangeY = pos[1] - lastY;
         int16_t velX = positionChangeX / diffTime;
         int16_t velY = positionChangeY / diffTime;
-        int16_t accelX = ((velX - lastVelX) * 1000) / diffTime;
-        int16_t accelY = ((velY - lastVelY) * 1000) / diffTime;
+        int16_t accelX = ((velX - lastVelX) * 10) / diffTime;
+        int16_t accelY = ((velY - lastVelY) * 10) / diffTime;
     
         effects[0].frictionPositionChange = velX;
         effects[1].frictionPositionChange = velY;
@@ -50,10 +50,16 @@ void updateEffects(bool recalculate){
         Serial.print(pos[1]);
         Serial.print("C");
         Serial.print(positionChangeX);
+        Serial.print(",");
+        Serial.print(positionChangeY);
         Serial.print("V");
         Serial.print(velX);
+        Serial.print(",");
+        Serial.print(velY);
         Serial.print("A");
         Serial.print(accelX);
+        Serial.print(",");
+        Serial.print(accelY);
         #endif
 
         lastX = pos[0];
