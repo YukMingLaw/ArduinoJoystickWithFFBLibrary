@@ -68,6 +68,34 @@ void PIDReportHandler::FreeAllEffects(void)
 	nextEID = 1;
 	memset((void*)& g_EffectStates, 0, sizeof(g_EffectStates));
 	pidBlockLoad.ramPoolAvailable = MEMORY_SIZE;
+
+    USB_FFBReport_SetEffect_Output_Data_t springEffect;
+	memset((void*)& springEffect, 0, sizeof(springEffect));
+    springEffect.reportId = 1;
+    springEffect.effectBlockIndex = 0;
+    springEffect.effectType = 0x08; // TODO: include from PIDReportType
+    springEffect.duration = 0xFF;
+    springEffect.gain = 255;
+    springEffect.enableAxis = 0x01; // TODO: include from PIDReportType
+    SetEffect(&springEffect);
+
+    USB_FFBReport_SetCondition_Output_Data_t springCondition;
+	memset((void*)& springCondition, 0, sizeof(springCondition));
+    springCondition.reportId = 3;
+    springCondition.effectBlockIndex = 0;
+    springCondition.cpOffset = 0;
+    springCondition.positiveCoefficient = 10000;
+    springCondition.negativeCoefficient = 10000;
+    springCondition.positiveSaturation = 10000;
+    springCondition.negativeSaturation = 10000;
+    springCondition.deadBand = 0;
+
+
+    for (int i=0; i<FFB_AXIS_COUNT; ++i)
+    {
+        springCondition.parameterBlockOffset = i;
+        SetCondition(&springCondition, &g_EffectStates[0]);
+    }
 }
 
 void PIDReportHandler::EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t* data)

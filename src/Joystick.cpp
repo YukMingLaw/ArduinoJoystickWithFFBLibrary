@@ -575,6 +575,14 @@ void Joystick_::forceCalculator(int32_t* forces) {
 	    for (int id = 0; id < MAX_EFFECTS; id++) {
 	    	volatile TEffectState& effect = DynamicHID().pidReportHandler.g_EffectStates[id];
 
+            Serial.print("id:");
+            Serial.print(id);
+            Serial.print("state:");
+            Serial.print(effect.state);
+            Serial.print("effectType:");
+            Serial.print(effect.effectType);
+            Serial.println("");
+
             effect.elapsedTime = (uint64_t)millis() - effect.startTime;
             // totalDuration counts all repetitions (duration+delay) * loopCount
             if ((effect.totalDuration == USB_DURATION_INFINITE) ||
