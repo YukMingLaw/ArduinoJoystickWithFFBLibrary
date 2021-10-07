@@ -58,7 +58,6 @@
 #define DIRECTION_ENABLE                   0x04
 #define X_AXIS_ENABLE                      0x01
 #define Y_AXIS_ENABLE                      0x02
-#define FFB_AXIS_COUNT                     0x02
 #define FORCE_FEEDBACK_MAXGAIN              100
 #define DEG_TO_RAD              ((float)((float)3.14159265359 / 180.0))
 
@@ -153,7 +152,7 @@ private:
 	///force calculate funtion
 	float NormalizeRange(int32_t x, int32_t maxValue);
 	int32_t ApplyEnvelope(volatile TEffectState& effect, int32_t value);
-	int32_t ApplyGain(uint8_t value, uint8_t gain);
+	int32_t ApplyGain(int16_t value, uint8_t gain);
 	int32_t ConstantForceCalculator(volatile TEffectState& effect);
 	int32_t RampForceCalculator(volatile TEffectState& effect);
 	int32_t SquareForceCalculator(volatile TEffectState& effect);

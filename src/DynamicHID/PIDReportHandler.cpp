@@ -169,17 +169,6 @@ void PIDReportHandler::SetEffect(USB_FFBReport_SetEffect_Output_Data_t* data)
 	effect->effectType = data->effectType;
 	effect->gain = data->gain;
 	effect->enableAxis = data->enableAxis;
-	//Serial.print("dX: ");
-	//Serial.print(effect->directionX);
-	//Serial.print(" dX: ");
-	//Serial.print(effect->directionY);
-	//Serial.print(" eT: ");
-	//Serial.print(effect->effectType);
-	//Serial.print(" eA: ");
-	//Serial.println(effect->enableAxis);
-	//  effect->triggerRepeatInterval;
-	//  effect->samplePeriod;   // 0..32767 ms
-	//  effect->triggerButton;
 }
 
 void PIDReportHandler::SetEnvelope(USB_FFBReport_SetEnvelope_Output_Data_t* data, volatile TEffectState* effect)
@@ -192,14 +181,14 @@ void PIDReportHandler::SetEnvelope(USB_FFBReport_SetEnvelope_Output_Data_t* data
 
 void PIDReportHandler::SetCondition(USB_FFBReport_SetCondition_Output_Data_t* data, volatile TEffectState* effect)
 {
-        uint8_t axis = data->parameterBlockOffset; 
-        effect->conditions[axis].cpOffset = data->cpOffset;
-        effect->conditions[axis].positiveCoefficient = data->positiveCoefficient;
-        effect->conditions[axis].negativeCoefficient = data->negativeCoefficient;
-        effect->conditions[axis].positiveSaturation = data->positiveSaturation;
-        effect->conditions[axis].negativeSaturation = data->negativeSaturation;
-        effect->conditions[axis].deadBand = data->deadBand;
-		effect->conditionBlocksCount++;
+	uint8_t axis = data->parameterBlockOffset; 
+    effect->conditions[axis].cpOffset = data->cpOffset;
+    effect->conditions[axis].positiveCoefficient = data->positiveCoefficient;
+    effect->conditions[axis].negativeCoefficient = data->negativeCoefficient;
+    effect->conditions[axis].positiveSaturation = data->positiveSaturation;
+    effect->conditions[axis].negativeSaturation = data->negativeSaturation;
+    effect->conditions[axis].deadBand = data->deadBand;
+	effect->conditionBlocksCount++;
 }
 
 void PIDReportHandler::SetPeriodic(USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState* effect)
@@ -248,6 +237,8 @@ void PIDReportHandler::UppackUsbData(uint8_t* data, uint16_t len)
 	//Serial.print("len:");
 	//Serial.println(len);
 	uint8_t effectId = data[1]; // effectBlockIndex is always the second byte.
+	//Serial.println("eid:");
+	//Serial.println(effectId);
 	switch (data[0])    // reportID
 	{
 	case 1:

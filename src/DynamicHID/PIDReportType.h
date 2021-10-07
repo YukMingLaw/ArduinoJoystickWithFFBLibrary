@@ -28,7 +28,7 @@
 #define _PIDREPORTTYPE_H
 
 #define MAX_EFFECTS 14
-#define FFB_AXIS_COUNT 2
+#define MAX_FFB_AXIS_COUNT 0x02
 #define SIZE_EFFECT sizeof(TEffectState)
 #define MEMORY_SIZE (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 #define TO_LT_END_16(x) ((x<<8)&0xFF00)|((x>>8)&0x00FF)
@@ -69,8 +69,8 @@ typedef struct//FFB: Set Envelope Output Report
 	uint8_t	effectBlockIndex;	// 1..40
 	uint16_t attackLevel;
 	uint16_t	fadeLevel;
-	uint16_t	attackTime;	// ms
-	uint16_t	fadeTime;	// ms
+	uint32_t	attackTime;	// ms
+	uint32_t	fadeTime;	// ms
 } USB_FFBReport_SetEnvelope_Output_Data_t;
 
 typedef struct// FFB: Set Condition Output Report
@@ -93,7 +93,7 @@ typedef struct//FFB: Set Periodic Output Report
 	uint16_t magnitude;
 	int16_t	offset;
 	uint16_t	phase;	// 0..255 (=0..359, exp-2)
-	uint16_t	period;	// 0..32767 ms
+	uint32_t	period;	// 0..32767 ms
 } USB_FFBReport_SetPeriodic_Output_Data_t;
 
 typedef struct//FFB: Set ConstantForce Output Report
@@ -184,6 +184,16 @@ typedef struct// FFB: PID Pool Feature Report
 	uint8_t		memoryManagement;	// Bits: 0=DeviceManagedPool, 1=SharedParameterBlocks
 } USB_FFBReport_PIDPool_Feature_Data_t;
 
+typedef struct {
+	int16_t cpOffset; // -128..127
+	int16_t  positiveCoefficient; // -128..127
+	int16_t  negativeCoefficient; // -128..127
+	uint16_t positiveSaturation;  // -128..127
+	uint16_t negativeSaturation;  // -128..127
+	uint16_t deadBand;  // 0..255
+	
+} TEffectCondition;
+
 ///effect
 #define USB_DURATION_INFINITE		0x7FFF
 
@@ -214,33 +224,28 @@ typedef struct// FFB: PID Pool Feature Report
 #define FRICTION_DEADBAND			0x30
 
 typedef struct {
-	int16_t cpOffset; // -128..127
-	int16_t  positiveCoefficient; // -128..127
-	int16_t  negativeCoefficient; // -128..127
-	uint16_t positiveSaturation;  // -128..127
-	uint16_t negativeSaturation;  // -128..127
-	uint16_t deadBand;  // 0..255
-} TEffectCondition;
-
-typedef struct {
 	volatile uint8_t state;  // see constants <MEffectState_*>
 	uint8_t effectType; //
 	int16_t offset;
 	uint8_t gain;
+	//envelop
 	int16_t attackLevel, fadeLevel;
+	uint16_t fadeTime, attackTime;
+
 	int16_t magnitude;
+	//direction
 	uint8_t enableAxis; // bits: 0=X, 1=Y, 2=DirectionEnable
 	uint8_t directionX; // angle (0=0 .. 255=360deg)
 	uint8_t directionY; // angle (0=0 .. 255=360deg)
 	uint8_t conditionBlocksCount;
-
-	TEffectCondition conditions[FFB_AXIS_COUNT];
-
+    //condition
+	TEffectCondition conditions[MAX_FFB_AXIS_COUNT];
+    //periodic
 	uint16_t phase;  // 0..255 (=0..359, exp-2)
 	int16_t startMagnitude;
 	int16_t  endMagnitude;
 	uint16_t  period; // 0..32767 ms
-	uint16_t duration, fadeTime, attackTime, elapsedTime;
+	uint16_t duration, elapsedTime;
 	uint64_t startTime;
 } TEffectState;
 #endif
