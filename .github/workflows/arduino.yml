@@ -1,0 +1,17 @@
+name: .NET
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: arduino/compile-sketches@v1
+      with:
+        fqbn: arduino:avr:micro
