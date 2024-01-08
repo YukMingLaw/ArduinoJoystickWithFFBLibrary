@@ -119,7 +119,6 @@ int DynamicHID_::RecvData(byte* data)
 void DynamicHID_::RecvfromUsb() 
 {
 	if (usb_Available() > 0) {
-		uint8_t out_ffbdata[64];
 		uint16_t len = USB_Recv(PID_ENDPOINT_OUT, &out_ffbdata, 64);
 		if (len >= 0) {
 			pidReportHandler.UppackUsbData(out_ffbdata, len);

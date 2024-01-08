@@ -25,6 +25,20 @@ void setup(){
     //enable gains REQUIRED
     Joystick.setGains(mygains);
     Joystick.begin();
+
+    cli();
+    TCCR3A = 0; //set TCCR1A 0
+    TCCR3B = 0; //set TCCR1B 0
+    TCNT3  = 0; //counter init
+    OCR3A = 399;
+    TCCR3B |= (1 << WGM32); //open CTC mode
+    TCCR3B |= (1 << CS31); //set CS11 1(8-fold Prescaler)
+    TIMSK3 |= (1 << OCIE3A);
+    sei();
+}
+
+ISR(TIMER3_COMPA_vect){
+  Joystick.getUSBPID();
 }
 
 void loop(){
@@ -53,5 +67,4 @@ void loop(){
     digitalWrite(7,LOW);
     analogWrite(9,abs(forces[0]));
   }
-  delay(1);
 }

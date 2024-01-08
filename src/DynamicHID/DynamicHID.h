@@ -136,7 +136,7 @@ protected:
 
 private:
   uint8_t epType[2];
-
+  uint8_t out_ffbdata[64];
   DynamicHIDSubDescriptor* rootNode;
   uint16_t descriptorSize;
 

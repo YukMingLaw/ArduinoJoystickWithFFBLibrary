@@ -2,12 +2,22 @@
 
 ## Statement
 
+### The v1.0.0 new version library is now available, with the following major updates:
+
+1.Fixed an issue where frame rates decrease in certain games after connecting a force feedback controller. Due to issues with the mechanism by which some games send force feedback data, the Arduino did not promptly notify the computer upon receiving the force feedback data, resulting in lost frames in these games. To resolve this problem, the reception of force feedback data has been moved to be handled within an ISR (Interrupt Service Routine) on the Arduino, which means that some interfaces have undergone changes compared to v0.9.0. Example code will be provided to demonstrate the corresponding modifications. This fix has been tested and confirmed working in games such as 'Horizon 4' and 'Horizon 5'.
+
+2.Corrected several errors in the force feedback calculation logic.
+
+3.A complete demonstration project has been provided for developers to reference. It can be found at the path: examples/YourFirstFFBController.
+
 ### This is a joy library for Atmega32UX chip with force feedback, which can be used to make game handle with vibration, game steering wheel with force feedback, etc.Multi-axis-force-feedback feature is added.
 
 
 ## Usage
 
-### 0. example：`examples/JoystickWithFFB/JoystickWithFFB.ino`
+### 0. example：
+
+`examples\SingleJoystickFFB\SingleJoystickFFB.ino`
 
 ### 1. create `JoyStick` object
 
@@ -60,7 +70,7 @@ struct Gains{
 */
 int8_t setGains(Gains* _gains);
 ```
-#### example code
+#### example code p1
 ```
 #include "Joystick.h"
 
@@ -118,7 +128,7 @@ struct EffectParams{
 int8_t setEffectParams(EffectParams* _effect_params);
 ```
 
-#### example code
+#### example code p2
 ```
 #include "Joystick.h"
 
@@ -150,13 +160,12 @@ void loop(){
   myeffectparams[1].springPosition = analogRead(A3);
   
   Joystick.setEffectParams(myeffectparams);
-  Joystick.getForce(forces);
 }
 
 ```
 
 
-### 4.Finally,get the force value with
+### 4.Finally,open ISR to recevie the PID data, than get the force value with
 
 `JoyStick.getForce(int32_t* forces)`
 
@@ -170,9 +179,73 @@ return type `void`
 
 range`[-255,255]`
 
+#### example code p3
+```
+#include "Joystick.h"
+
+Joystick_ Joystick();
+
+int32_t forces[2]={0};
+
+Gains mygains[2];
+EffectParams myeffectparams[2];
+
+//set X Axis gains
+mygains[0].totalGain = 50;
+mygains[0].springGain = 80;
+
+//set Y Axis gains
+mygains[1].totalGain = 50;
+mygains[1].springGain = 70;
+
+void setup(){
+    //enable gains REQUIRED
+    Joystick.setGains(mygains);
+
+    //set Timer3
+    cli();
+    TCCR3A = 0; //set TCCR1A 0
+    TCCR3B = 0; //set TCCR1B 0
+    TCNT3  = 0; //counter init
+    OCR3A = 399;
+    TCCR3B |= (1 << WGM32); //open CTC mode
+    TCCR3B |= (1 << CS31); //set CS11 1(8-fold Prescaler)
+    TIMSK3 |= (1 << OCIE3A);
+    sei();
+}
+
+//ISR
+ISR(TIMER3_COMPA_vect){
+  Joystick.getUSBPID();
+}
+
+void loop(){
+  //set X Axis Spring Effect Param
+  myeffectparams[0].springMaxPosition = 1023;
+  myeffectparams[0].springPosition = analogRead(A2);
+  
+  //set Y Axis Spring Effect Param
+  myeffectparams[1].springMaxPosition = 1023;
+  myeffectparams[1].springPosition = analogRead(A3);
+  
+  Joystick.setEffectParams(myeffectparams);
+
+  Joystick.getForce(forces);
+  Serial.print(forces[0]);
+  Serial.print("  ");
+  Serial.println(forces[1]);
+}
+
+```
+
 #### **Pay Attention!**
 
 **`Joystick.setGains(mygains)` and `Joystick.setEffectParams(myeffectparams)` must be invoked before `JoyStick.getForce(int32_t* forces)`**
+
+### 5.DEMO
+`examples/YourFirstFFBController`
+
+![diagramm](examples/YourFirstFFBController/ffbcontroller.png)
 
 ## Ref
 

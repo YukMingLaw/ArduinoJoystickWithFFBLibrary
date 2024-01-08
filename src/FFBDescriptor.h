@@ -387,7 +387,7 @@ static const uint8_t pidReportDescriptor[] PROGMEM= {
 	0x35, 0x00,           //     Physical Minimum (0)
 	0x46, 0xFF, 0x00,     //     Physical Maximum (255)
 	0x75, 0x08,           //     Report Size (8)
-	0x95, 0x02,           //     Report Count (2)
+	0x95, 0x01,           //     Report Count (2)
 	0x91, 0x02,           //     Output (Data,Var,Abs)
   0xC0,                 //End Collection Datalink (Logical) (OK)
 
